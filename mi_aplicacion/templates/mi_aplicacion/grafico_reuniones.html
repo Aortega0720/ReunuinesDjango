@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">📊 Estado de las Reuniones</h2>
+
+    <!-- Botón para exportar -->
+    <div class="mb-3">
+        <button class="btn btn-primary" id="exportarImagen">📥 Exportar todas las gráficas</button>
+    </div>
+
+    <!-- Grilla de 2 columnas -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <canvas id="chartPie" height="150"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="chartBar" height="150"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="chartLine" height="150"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="chartScatter" height="150"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Datos desde Django
+    const estados = {{ estados|safe }};
+    const cantidades = {{ cantidades|safe }};
+
+    const colores = [
+        'rgba(255, 193, 7, 0.7)',  // amarillo
+        'rgba(220, 53, 69, 0.7)',  // rojo
+        'rgba(40, 167, 69, 0.7)'   // verde
+    ];
+
+    const bordes = [
+        'rgba(255, 193, 7, 1)',
+        'rgba(220, 53, 69, 1)',
+        'rgba(40, 167, 69, 1)'
+    ];
+
+    // Gráfico Pie
+    new Chart(document.getElementById('chartPie'), {
+        type: 'pie',
+        data: { labels: estados, datasets: [{ data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }] }
+    });
+
+    // Gráfico Barra
+    new Chart(document.getElementById('chartBar'), {
+        type: 'bar',
+        data: { labels: estados, datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }] },
+        options: { responsive: true }
+    });
+
+    // Gráfico Línea
+    new Chart(document.getElementById('chartLine'), {
+        type: 'line',
+        data: { labels: estados, datasets: [{ label: 'Evolución', data: cantidades, fill: false, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1 }] }
+    });
+
+    // Gráfico Dispersión
+    new Chart(document.getElementById('chartScatter'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Puntos',
+                data: cantidades.map((y, i) => ({ x: i, y: y })),
+                backgroundColor: 'rgba(153, 102, 255, 0.7)'
+            }]
+        }
+    });
+
+    // Exportar todas las gráficas como una sola imagen
+    document.getElementById('exportarImagen').addEventListener('click', function() {
+        html2canvas(document.querySelector('.row')).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'graficas_reuniones.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    });
+});
+</script>
+{% endblock %}

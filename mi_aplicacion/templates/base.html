@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panel Empresa{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/construccion.css' %}">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Header con logo -->
+        <div class="sidebar-header">
+            <img src="{% static 'img/logo (2).svg' %}" alt="Logo Empresa">
+        </div>
+
+        <!-- Menú -->
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'mi_aplicacion:reunion_list' %}">Reuniones</a>
+            <a class="nav-link" href="{% url 'mi_aplicacion:lista_reuniones_info' %}">Informe</a>
+            <a class="nav-link" href="{% url 'mi_aplicacion:grafico_reuniones' %}">Gráficas</a>
+            <a class="nav-link" href="{% url 'mi_aplicacion:sitio_construccion' %}">Documentos</a>
+            <a class="nav-link" href="{% url 'mi_aplicacion:sitio_construccion' %}">Salir</a>
+        </nav>
+
+        <!-- Footer -->
+        <div class="sidebar-footer">
+            &copy; {{ year }} RMBC (Antonio Ortega)
+            <br>
+            <a href="{% url 'mi_aplicacion:sitio_construccion' %}" class="text-white text-decoration-underline">Términos y Condiciones</a>
+        </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load dict_filters %}
+
+{% block title %}{{ reunion.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+
+  <!-- Botón Volver -->
+  <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
+    ← Volver
+  </a>
+
+  <h1 class="display-4 mb-3">{{ reunion.titulo }}</h1>
+
+  <div class="mb-4">
+    <p><strong>🧑‍🤝‍🧑 Grupo:</strong> {{ reunion.grupo_trabajo.nombre }}</p>
+    <p><strong>📝 Descripción:</strong> {{ reunion.descripcion }}</p>
+    <p><strong>📅 Fecha de inicio:</strong> {{ reunion.fecha_inicio|date:"d/m/Y H:i" }}</p>
+    {% if reunion.fecha_fin %}
+      <p><strong>📅 Fecha de finalización:</strong> {{ reunion.fecha_fin|date:"d/m/Y H:i" }}</p>
+    {% endif %}
+    <p>
+      <strong>📌 Estado:</strong>
+      {% if reunion.estado == "cerrada" %}
+        <span class="badge bg-danger">Cerrada</span>
+      {% elif reunion.estado == "en_proceso" %}
+        <span class="badge bg-warning text-dark">En proceso</span>
+      {% else %}
+        <span class="badge bg-secondary">Sin iniciar</span>
+      {% endif %}
+    </p>
+
+    {% if reunion.etiquetas.exists %}
+      <p>
+        <strong>🏷️ Etiquetas:</strong>
+        {% for etiqueta in reunion.etiquetas.all %}
+          <span class="badge bg-primary">{{ etiqueta.nombre }}</span>
+        {% endfor %}
+      </p>
+    {% endif %}
+  </div>
+
+  <!-- Documentos Adjuntos -->
+  {% if reunion.documentos.exists %}
+    <div class="mb-5">
+      <h5 class="fw-bold mb-3">📂 Documentos adjuntos</h5>
+      <ul class="list-group shadow-sm">
+        {% for doc in reunion.documentos.all %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+              <strong>{{ doc.nombre|default:doc.archivo.name }}</strong>
+              <small class="text-muted ms-2">({{ doc.archivo.size|filesizeformat }})</small>
+            </div>
+            <div class="btn-group">
+              <a href="{{ doc.archivo.url }}" class="btn btn-sm btn-outline-primary" download>
+                <i class="bi bi-download"></i> Descargar
+              </a>
+              <a href="{{ doc.archivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-eye"></i> Ver
+              </a>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+  <hr>
+
+  <h2 class="mb-4">🗣️ Intervenciones</h2>
+
+  <div class="accordion" id="accordionIntervenciones">
+    {% for intervencion in reunion.intervenciones.all %}
+      <div class="accordion-item shadow-sm border-0 mb-3">
+        <h2 class="accordion-header" id="heading{{ intervencion.pk }}">
+          <button class="accordion-button collapsed" type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapse{{ intervencion.pk }}"
+                  aria-expanded="false"
+                  aria-controls="collapse{{ intervencion.pk }}">
+            <strong>{{ intervencion.autor.get_full_name }}</strong>
+            <small class="text-muted ms-2">{{ intervencion.fecha_creacion|date:"d/m/Y H:i" }}</small>
+          </button>
+        </h2>
+        <div id="collapse{{ intervencion.pk }}" class="accordion-collapse collapse"
+             aria-labelledby="heading{{ intervencion.pk }}"
+             data-bs-parent="#accordionIntervenciones">
+          <div class="accordion-body">
+            <p class="fs-5">{{ intervencion.contenido|linebreaks }}</p>
+            {% if intervencion.documentos.exists %}
+              <div class="documentos mt-3">
+                  <h5 class="text-primary">
+                      📎 Documentos adjuntos:
+                  </h5>
+                  <div class="row g-2">
+                      {% for doc in intervencion.documentos.all %}
+                          <div class="col-md-6 col-lg-4">
+                              <div class="card shadow-sm border-0 h-100">
+                                  <div class="card-body d-flex align-items-center">
+                                      <span class="me-2" style="font-size:1.4em;">📄</span>
+                                      <a href="{{ doc.archivo.url }}" target="_blank" class="text-decoration-none text-dark fw-semibold">
+                                          {{ doc.nombre|default:doc.archivo.name }}
+                                      </a>
+                                  </div>
+                              </div>
+                          </div>
+                      {% endfor %}
+                  </div>
+              </div>
+          {% endif %}
+
+            <h6 class="mt-4">💬 Comentarios</h6>
+            <ul class="list-group list-group-flush mb-3">
+              {% for comentario in intervencion.comentarios.all %}
+                <li class="list-group-item">
+                  <strong>{{ comentario.autor.get_full_name }}</strong>: {{ comentario.contenido }}
+                </li>
+              {% empty %}
+                <li class="list-group-item text-muted">No hay comentarios.</li>
+              {% endfor %}
+            </ul>
+
+            {% if user.is_authenticated %}
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#modalComentario{{ intervencion.pk }}">
+                Comentar
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% if user.is_authenticated %}
+        <!-- Modal de Comentario -->
+        <div class="modal fade" id="modalComentario{{ intervencion.pk }}" tabindex="-1"
+          aria-labelledby="modalLabel{{ intervencion.pk }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content border-0 shadow-lg rounded-3">
+            
+            <form method="post" class="needs-validation" novalidate>
+              {% csrf_token %}
+              
+              <!-- Encabezado -->
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title d-flex align-items-center" id="modalLabel{{ intervencion.pk }}">
+                  <i class="bi bi-chat-dots-fill me-2"></i> Agregar Comentario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
+              </div>
+              
+              <!-- Cuerpo -->
+              <div class="modal-body p-4">
+                <p class="text-muted mb-3">
+                  Escribe tu comentario para esta intervención.  
+                  Los campos marcados con <span class="text-danger">*</span> son obligatorios.
+                </p>
+                
+                <div class="bg-light p-3 rounded-3">
+                  {% with comentario_form=comentario_forms|dict_get:intervencion.pk %}
+                  <div class="comentario-form-wrapper p-4 rounded-3 shadow-sm bg-white">
+                    {{ comentario_form.as_p }}
+                  </div>
+                  {% endwith %}
+                </div>
+              </div>
+              
+              <!-- Pie -->
+              <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                  <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary px-4">
+                  <i class="bi bi-send-fill"></i> Enviar Comentario
+                </button>
+              </div>
+            </form>
+            
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <hr class="my-5">
+
+  {% if user.is_authenticated %}
+  <h3 class="mb-3">➕ Agregar nueva intervención</h3>
+  <form method="post" enctype="multipart/form-data" class="border rounded p-4 shadow-sm bg-light">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      {{ form_intervencion.non_field_errors }}
+      <label class="form-label fw-bold">✍ Tu intervención</label>
+      {{ form_intervencion.contenido|add_class:"form-control form-control-lg shadow-sm" }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">📎 Documento (opcional)</label>
+      {{ form_documento.archivo }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">📝 Nombre del documento (opcional)</label>
+      {{ form_documento.nombre }}
+    </div>
+
+    <button class="btn btn-success mt-2 px-4" type="submit">
+      💾 Enviar intervención
+    </button>
+  </form>
+{% else %}
+  <p><a href="{% url 'login' %}" class="btn btn-outline-secondary">Inicia sesión</a> para participar.</p>
+{% endif %}
+
+</div>
+{% endblock %}

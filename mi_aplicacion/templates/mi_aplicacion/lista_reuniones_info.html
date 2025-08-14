@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Reuniones{% endblock %}
+
+{% block content %}
+<a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
+  <i class="bi bi-arrow-left"></i> Volver
+</a>
+<div class="container my-4">
+    <h1 class="mb-4">📋 Informe de Reuniones</h1>
+
+    <!-- Formulario de filtro -->
+    <form method="get" class="mb-3 row g-2">
+        <div class="col-auto">
+            <select name="estado" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los estados</option>
+                {% for estado in estados_disponibles %}
+                    <option value="{{ estado }}" {% if estado == estado_actual %}selected{% endif %}>
+                        {{ estado|title }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'mi_aplicacion:lista_reuniones_info' %}" class="btn btn-secondary">Restablecer</a>
+        </div>
+        <div class="mb-3">
+    <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}" 
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+    </a>
+</div>
+    </form>
+
+    <!-- Tabla -->
+    <table class="table table-hover table-striped align-middle shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Grupo</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Etiquetas</th>
+                <th>Descripción</th>
+                <th>Detalles</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reunion in reuniones %}
+            <tr>
+                <td>{{ reunion.id }}</td>
+                <td>{{ reunion.titulo }}</td>
+                <td>{{ reunion.grupo_trabajo.nombre }}</td>
+                <td>{{ reunion.fecha|date:"d/m/Y" }}</td>
+                <td>
+                    {% if reunion.estado == "cerrada" %}
+                        <span class="badge bg-success">Cerrada</span>
+                    {% elif reunion.estado == "en_proceso" %}
+                        <span class="badge bg-warning text-dark">En proceso</span>
+                    {% else %}
+                        <span class="badge bg-danger">Sin iniciar</span>
+                    {% endif %}
+                </td>
+                 <td>
+                    {% if reunion.etiquetas.all %}
+                        {% for etiqueta in reunion.etiquetas.all %}
+                            <span class="badge bg-info text-dark">{{ etiqueta.nombre }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">Sin etiquetas</span>
+                    {% endif %}
+                </td>
+                <td>{{ reunion.descripcion }}</td>
+                <td>
+                    <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
+                        Ver detalles
+                    </a>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">No hay reuniones registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

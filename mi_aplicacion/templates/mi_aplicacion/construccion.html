@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="construction-container text-center">
+  
+  <!-- Imagen central -->
+  <img src="https://cdn-icons-png.flaticon.com/512/3079/3079063.png" 
+     alt="Sitio en Construcción" 
+     class="construction-image mb-4">
+
+  <h1 class="mb-3">Sitio en Construcción</h1>
+  <p class="mb-4">
+    Estamos trabajando para traerte la mejor experiencia.<br>
+    ¡Vuelve pronto para ver las novedades!
+  </p>
+
+  <a href="{% url 'mi_aplicacion:reunion_list' %}" class="btn btn-light text-primary btn-home mb-3">
+    <i class="bi bi-house-door-fill me-2"></i> Ir al Inicio
+  </a>
+
+  <div class="footer-text mt-4">
+    © 2025 RMBC. Todos los derechos reservados.
+  </div>
+</div>
+{% endblock %}
+
