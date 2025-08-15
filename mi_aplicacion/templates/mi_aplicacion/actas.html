@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/actas.css' %}">
+<!-- Botón Volver -->
+  <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
+    ← Volver
+  </a>
+<form method="get" class="mb-3">
+    <label for="proyecto">Filtrar por proyecto:</label>
+    <select name="proyecto" id="proyecto" class="form-select" onchange="this.form.submit()">
+        <option value="">Todos</option>
+        {% for proyecto in proyectos %}
+            <option value="{{ proyecto.id }}" {% if proyecto.id|stringformat:"s" == proyecto_seleccionado %}selected{% endif %}>
+                {{ proyecto.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Reunión</th>
+            <th>Fecha</th>
+            <th>Proyecto</th>
+            <th>Facetas</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for reunion in reuniones %}
+        <tr>
+            <td>{{ reunion.titulo }}</td>
+            <td>{{ reunion.fecha }}</td>
+            <td>{{ reunion.proyecto.nombre }}</td>
+            <td>
+                {% if reunion.proyecto.facetas.all %}
+                    {% for faceta in reunion.proyecto.facetas.all %}
+                        <span class="badge bg-primary">{{ faceta.nombre }}</span>
+                    {% empty %}
+                        <em>Sin facetas</em>
+                    {% endfor %}
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'mi_aplicacion:acta_pdf' reunion.id %}" class="btn btn-sm btn-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/documentos.css' %}">
+
+<!-- Botón Volver -->
+  <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
+    ← Volver
+  </a>
+  
+<div class="container mt-5">
+    <h1 class="text-center mb-5">📚 Centro de Documentos</h1>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-4 col-sm-6">
+            <div class="card doc-card shadow-sm">
+                <div class="card-body">
+                    <div class="doc-icon">📄</div>
+                    <h5 class="card-title">Actas</h5>
+                    <p class="text-muted">Consulta todas las actas de reuniones pasadas.</p>
+                    <a href="{% url 'mi_aplicacion:actas_por_proyecto' %}" class="btn btn-primary doc-btn">Ver Actas</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+            <div class="card doc-card shadow-sm">
+                <div class="card-body">
+                    <div class="doc-icon">📝</div>
+                    <h5 class="card-title">Compromisos</h5>
+                    <p class="text-muted">Seguimiento de compromisos establecidos.</p>
+                    <a href="#" class="btn btn-success doc-btn">Ver Compromisos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+            <div class="card doc-card shadow-sm">
+                <div class="card-body">
+                    <div class="doc-icon">🤝</div>
+                    <h5 class="card-title">Acuerdos</h5>
+                    <p class="text-muted">Resumen de acuerdos tomados en reuniones.</p>
+                    <a href="#" class="btn btn-warning doc-btn">Ver Acuerdos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

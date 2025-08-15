@@ -1,0 +1,31 @@
+.doc-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.doc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.doc-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #4a90e2;
+}
+
+.doc-card .card-body {
+    text-align: center;
+    padding: 20px;
+}
+
+.doc-btn {
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-weight: bold;
+}
+
+h1 {
+    font-weight: bold;
+}
