@@ -1,24 +1,88 @@
 ﻿# tu_app/views.py
 from django.views.generic import ListView, DetailView, TemplateView
-from .models import Reunion, Intervencion, Comentario
+from .models import Reunion, Intervencion, Comentario, Proyecto
 from django.shortcuts import redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import IntervencionForm, ComentarioForm, IntervencionDocumentoForm
-from django.db.models import Count
+from django.db.models import Count,Prefetch
 from django.utils.dateparse import parse_date
 from django.http import JsonResponse, HttpResponse
 import openpyxl
 from django.views import View
 
+from itertools import groupby
+from operator import attrgetter
+
 class ReunionListView(ListView):
     model = Reunion
     template_name = 'mi_aplicacion/reunion_list.html'
     context_object_name = 'reuniones'
-    paginate_by = 10
+    paginate_by = 9  # ajustar si quieres más/menos por página
 
     def get_queryset(self):
+        qs = (
+            Reunion.objects
+            .select_related('grupo_trabajo', 'proyecto', 'frente')
+            .prefetch_related('etiquetas')
+        ).order_by(
+            'frente__nombre',  # ordenar por frente primero para el groupby
+            '-fecha'
+        )
 
-        return Reunion.objects.select_related('grupo_trabajo').order_by('-fecha')
+        proyecto_pk = self.request.GET.get('proyecto')
+        if proyecto_pk:
+            try:
+                qs = qs.filter(proyecto_id=int(proyecto_pk))
+            except (ValueError, TypeError):
+                pass
+
+        # también filtrar por frente si se pasa (opcional)
+        frente_pk = self.request.GET.get('frente')
+        if frente_pk:
+            try:
+                qs = qs.filter(frente_id=int(frente_pk))
+            except (ValueError, TypeError):
+                pass
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Proyectos para el select
+        context['proyectos'] = Proyecto.objects.order_by('nombre')
+        context['proyecto_actual'] = self.request.GET.get('proyecto', '')
+        context['frente_actual'] = self.request.GET.get('frente', '')
+
+        # Agrupar las reuniones de la página actual por frente
+        page_qs = context.get('page_obj').object_list if context.get('page_obj') else list(context.get('reuniones', []))
+
+        # Normalizar nombre de frente (si None -> 'Sin frente')
+        def frente_name(item):
+            return item.frente.nombre if getattr(item, 'frente', None) else 'Sin frente'
+
+        # `page_qs` ya viene ordenado por frente__nombre en get_queryset, por eso groupby funciona
+        grouped = []
+        for name, group in groupby(page_qs, key=frente_name):
+            grouped.append({
+                'frente': name,
+                'reuniones': list(group),
+                'count': sum(1 for _ in group)  # aunque ya consumimos group al list(group), keep count from list length
+            })
+
+        # Correction: above consumed group; better compute from list length:
+        grouped = []
+        for name, group in groupby(page_qs, key=frente_name):
+            items = list(group)
+            grouped.append({
+                'frente': name,
+                'reuniones': items,
+                'count': len(items),
+            })
+
+        context['grouped_reuniones'] = grouped
+
+        return context
 
 class ReunionDetailView(LoginRequiredMixin, DetailView):
     model = Reunion

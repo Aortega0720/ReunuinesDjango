@@ -22,6 +22,32 @@ class Documento(models.Model):
 
     def __str__(self):
         return self.nombre or self.archivo.name
+    
+class Proyecto(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.nombre
+
+class Frente(models.Model):
+    proyecto = models.ForeignKey(
+        Proyecto,
+        on_delete=models.CASCADE,
+        related_name='frentes'
+    )
+    nombre = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=160, blank=True, null=True)
+    descripcion = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ('proyecto', 'nombre')
+        ordering = ('proyecto', 'nombre')
+
+    def __str__(self):
+        return f"{self.proyecto.nombre} — {self.nombre}"
 
 class Reunion(models.Model):
     ESTADOS = [
@@ -29,6 +55,21 @@ class Reunion(models.Model):
         ('en_proceso', 'En proceso'),
         ('cerrada', 'Cerrada'),
     ]
+
+    proyecto = models.ForeignKey(
+        Proyecto,
+        on_delete=models.CASCADE,
+        related_name='reuniones',
+        null=True,  # temporal si ya tienes datos, ver nota abajo
+        blank=True
+    )
+    frente = models.ForeignKey(
+        Frente,
+        on_delete=models.SET_NULL,   # si borran el frente, dejamos NULL
+        null=True,
+        blank=True,
+        related_name='reuniones'
+    )
 
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
@@ -39,7 +80,9 @@ class Reunion(models.Model):
     documentos = models.ManyToManyField(Documento, blank=True, related_name="reuniones")
 
     def __str__(self):
-        return self.titulo
+        proyecto_nombre = getattr(self.proyecto, 'nombre', 'Sin proyecto')
+        return f"{self.titulo} — {proyecto_nombre}"
+
 
 class IntervencionDocumento(models.Model):
     intervencion = models.ForeignKey('Intervencion', on_delete=models.CASCADE, related_name='documentos')

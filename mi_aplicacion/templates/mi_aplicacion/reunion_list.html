@@ -9,66 +9,130 @@
 
 <h1 class="mb-4">Listado de Reuniones</h1>
 
-<div class="row g-3">
-  {% for reunion in reuniones %}
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm h-100 border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <h5 class="card-title">{{ reunion.titulo }}</h5>
-            
-            {% if reunion.estado == "cerrada" %}
-              <span class="badge bg-success">Cerrada</span>
-            {% elif reunion.estado == "en_proceso" %}
-              <span class="badge bg-warning text-dark">En proceso</span>
-            {% elif reunion.estado == "sin_iniciar" %}
-              <span class="badge bg-danger">Sin iniciar</span>
-            {% else %}
-              <span class="badge bg-light text-dark">Desconocido</span>
-            {% endif %}
+<!-- FILTRO POR PROYECTO (igual que antes) -->
+<form method="get" class="mb-4 d-flex align-items-center g-2">
+  <div class="me-2">
+    <label for="proyectoSelect" class="form-label visually-hidden">Proyecto</label>
+    <select id="proyectoSelect" name="proyecto" class="form-select" onchange="this.form.submit()">
+      <option value="">— Todos los proyectos —</option>
+      {% for p in proyectos %}
+        <option value="{{ p.pk }}" {% if proyecto_actual|stringformat:"s" == p.pk|stringformat:"s" %}selected{% endif %}>
+          {{ p.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if proyecto_actual %}
+    <div>
+      <a href="{% url 'mi_aplicacion:reunion_list' %}" class="btn btn-outline-secondary">Restablecer</a>
+    </div>
+  {% endif %}
+</form>
+
+{# ACCORDION DE FRENTES pero sin tocar el estilo del contenedor de reuniones (row g-3, cards, etc.) #}
+{% if grouped_reuniones %}
+<div class="accordion" id="accordionFrentes">
+  {% for grupo in grouped_reuniones %}
+    <div class="accordion-item mb-3">
+      <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+        <button
+          class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#collapse{{ forloop.counter }}"
+          aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+          aria-controls="collapse{{ forloop.counter }}"
+        >
+          <div class="d-flex align-items-center">
+            <strong class="me-2">{{ grupo.frente }}</strong>
+            <small class="text-muted">({{ grupo.count }})</small>
           </div>
+        </button>
+      </h2>
 
-          <p class="card-subtitle text-muted mb-2">
-            📅 {{ reunion.fecha|date:"d/m/Y H:i" }}
-          </p>
+      <div
+        id="collapse{{ forloop.counter }}"
+        class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+        aria-labelledby="heading{{ forloop.counter }}"
+        data-bs-parent="#accordionFrentes"
+      >
+        <div class="accordion-body">
+          {# <-- Aquí mantenemos exactamente el mismo contenedor / grilla que usabas antes --> #}
+          <div class="row g-3">
+            {% for reunion in grupo.reuniones %}
+              <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100 border-0">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <h5 class="card-title">{{ reunion.titulo }}</h5>
 
-          {% if reunion.etiquetas.exists %}
-            <div class="mb-2">
-              {% for etiqueta in reunion.etiquetas.all %}
-                <span class="badge bg-primary">{{ etiqueta.nombre }}</span>
-              {% endfor %}
-            </div>
-          {% endif %}
+                      {% if reunion.estado == "cerrada" %}
+                        <span class="badge bg-success">Cerrada</span>
+                      {% elif reunion.estado == "en_proceso" %}
+                        <span class="badge bg-warning text-dark">En proceso</span>
+                      {% elif reunion.estado == "sin_iniciar" %}
+                        <span class="badge bg-danger">Sin iniciar</span>
+                      {% else %}
+                        <span class="badge bg-light text-dark">Desconocido</span>
+                      {% endif %}
+                    </div>
 
-          <p class="card-text">
-            {{ reunion.descripcion|truncatewords:20 }}
-          </p>
-          <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
-            Ver detalles
-          </a>
+                    <p class="card-subtitle text-muted mb-2">
+                      📅 {{ reunion.fecha|date:"d/m/Y H:i" }}
+                      {% if reunion.proyecto %}
+                        • <strong>Proyecto:</strong> {{ reunion.proyecto.nombre }}
+                      {% endif %}
+                      {% if reunion.frente %}
+                        • <strong>Frente:</strong> {{ reunion.frente.nombre }}
+                      {% endif %}
+                    </p>
+
+                    {% if reunion.etiquetas.exists %}
+                      <div class="mb-2">
+                        {% for etiqueta in reunion.etiquetas.all %}
+                          <span class="badge bg-primary">{{ etiqueta.nombre }}</span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+
+                    <p class="card-text">
+                      {{ reunion.descripcion|truncatewords:20 }}
+                    </p>
+
+                    <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
+                      Ver detalles
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          {# fin del contenedor original #}
         </div>
       </div>
     </div>
-  {% empty %}
-    <div class="col-12">
-      <div class="alert alert-info">No hay reuniones todavía.</div>
-    </div>
   {% endfor %}
 </div>
+{% else %}
+  <div class="alert alert-info">No hay reuniones todavía.</div>
+{% endif %}
 
+{# PAGINACIÓN: mantenemos la misma lógica para conservar filtros #}
 {% if is_paginated %}
   <div class="d-flex justify-content-between align-items-center mt-4">
     {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary btn-sm">« Anterior</a>
+      <a href="?{% if proyecto_actual %}proyecto={{ proyecto_actual }}&{% endif %}page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary btn-sm">« Anterior</a>
     {% else %}
       <span></span>
     {% endif %}
     <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary btn-sm">Siguiente »</a>
+      <a href="?{% if proyecto_actual %}proyecto={{ proyecto_actual }}&{% endif %}page={{ page_obj.next_page_number }}" class="btn btn-outline-primary btn-sm">Siguiente »</a>
     {% else %}
       <span></span>
     {% endif %}
   </div>
 {% endif %}
+
 {% endblock %}
