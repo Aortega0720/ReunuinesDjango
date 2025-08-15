@@ -232,11 +232,19 @@ class GraficoReunionesView(TemplateView):
     
 class ExportarReunionesExcelView(View):
     def get(self, request, *args, **kwargs):
-        # Filtrar por estado si viene en la URL
+        # Filtrar por estado, proyecto y frente si vienen en la URL
         estado = request.GET.get("estado")
+        proyecto_id = request.GET.get("proyecto")
+        frente_id = request.GET.get("frente")
+
         reuniones = Reunion.objects.all()
+
         if estado:
             reuniones = reuniones.filter(estado=estado)
+        if proyecto_id:
+            reuniones = reuniones.filter(proyecto_id=proyecto_id)
+        if frente_id:
+            reuniones = reuniones.filter(frente_id=frente_id)
 
         # Crear libro y hoja
         wb = openpyxl.Workbook()
@@ -244,16 +252,20 @@ class ExportarReunionesExcelView(View):
         ws.title = "Reuniones"
 
         # Encabezados
-        ws.append(["ID", "Título", "Grupo", "Fecha", "Estado", "Etiquetas", "Descripción"])
+        ws.append([
+            "ID", "Título", "Proyecto", "Frente", "Grupo", 
+            "Fecha", "Estado", "Etiquetas", "Descripción"
+        ])
 
         # Filas con datos
         for r in reuniones:
-            # Convertir etiquetas ManyToMany a texto
             etiquetas_texto = ", ".join(str(e) for e in r.etiquetas.all())
 
             ws.append([
                 r.id,
                 r.titulo,
+                r.proyecto.nombre if r.proyecto else "",
+                r.frente.nombre if r.frente else "",
                 r.grupo_trabajo.nombre if r.grupo_trabajo else "",
                 r.fecha.strftime("%d/%m/%Y") if r.fecha else "",
                 r.estado,
