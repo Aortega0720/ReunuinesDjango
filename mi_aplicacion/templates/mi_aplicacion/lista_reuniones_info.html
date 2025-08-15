@@ -6,31 +6,59 @@
 <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
   <i class="bi bi-arrow-left"></i> Volver
 </a>
+
 <div class="container my-4">
     <h1 class="mb-4">📋 Informe de Reuniones</h1>
 
     <!-- Formulario de filtro -->
     <form method="get" class="mb-3 row g-2">
-        <div class="col-auto">
-            <select name="estado" class="form-select" onchange="this.form.submit()">
-                <option value="">Todos los estados</option>
-                {% for estado in estados_disponibles %}
-                    <option value="{{ estado }}" {% if estado == estado_actual %}selected{% endif %}>
-                        {{ estado|title }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-auto">
-            <a href="{% url 'mi_aplicacion:lista_reuniones_info' %}" class="btn btn-secondary">Restablecer</a>
-        </div>
+    <!-- Filtro estado -->
+    <div class="col-auto">
+        <select name="estado" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos los estados</option>
+            {% for estado in estados_disponibles %}
+                <option value="{{ estado }}" {% if estado == estado_actual %}selected{% endif %}>
+                    {{ estado|title }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Filtro proyecto -->
+    <div class="col-auto">
+        <select name="proyecto" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos los proyectos</option>
+            {% for proyecto in proyectos_disponibles %}
+                <option value="{{ proyecto.id }}" {% if proyecto.id|stringformat:"s" == proyecto_actual %}selected{% endif %}>
+                    {{ proyecto.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Filtro frente -->
+    <div class="col-auto">
+        <select name="frente" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos los frentes</option>
+            {% for frente in frentes_disponibles %}
+                <option value="{{ frente.id }}" {% if frente.id|stringformat:"s" == frente_actual %}selected{% endif %}>
+                    {{ frente.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-auto">
+        <a href="{% url 'mi_aplicacion:lista_reuniones_info' %}" class="btn btn-secondary">Restablecer</a>
+    </div>
+    <!-- Exportar a Excel -->
         <div class="mb-3">
-    <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}" 
-       class="btn btn-success">
-        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-    </a>
-</div>
-    </form>
+            <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}&proyecto={{ proyecto_actual }}&frente={{ frente_actual }}" 
+            class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+            </a>
+        </div>
+</form>
 
     <!-- Tabla -->
     <table class="table table-hover table-striped align-middle shadow-sm">
@@ -38,6 +66,8 @@
             <tr>
                 <th>ID</th>
                 <th>Título</th>
+                <th>Proyecto</th>
+                <th>Frente</th>
                 <th>Grupo</th>
                 <th>Fecha</th>
                 <th>Estado</th>
@@ -51,6 +81,8 @@
             <tr>
                 <td>{{ reunion.id }}</td>
                 <td>{{ reunion.titulo }}</td>
+                <td>{{ reunion.proyecto.nombre }}</td>
+                <td>{{ reunion.frente.nombre }}</td>
                 <td>{{ reunion.grupo_trabajo.nombre }}</td>
                 <td>{{ reunion.fecha|date:"d/m/Y" }}</td>
                 <td>
@@ -76,13 +108,28 @@
                     <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
                         Ver detalles
                     </a>
+                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center text-muted">No hay reuniones registradas.</td>
+                <td colspan="10" class="text-center text-muted">No hay reuniones registradas.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<script>
+document.getElementById('proyecto-select').addEventListener('change', function() {
+    const proyectoId = this.value;
+    const frenteSelect = document.getElementById('frente-select');
+    for (let option of frenteSelect.options) {
+        if (option.value === '') {
+            option.hidden = false;
+            continue;
+        }
+        option.hidden = proyectoId && option.getAttribute('data-proyecto') !== proyectoId;
+    }
+});
+</script>
 {% endblock %}

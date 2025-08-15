@@ -1,6 +1,6 @@
 ﻿# tu_app/views.py
 from django.views.generic import ListView, DetailView, TemplateView
-from .models import Reunion, Intervencion, Comentario, Proyecto
+from .models import Reunion, Intervencion, Comentario, Proyecto,Frente
 from django.shortcuts import redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import IntervencionForm, ComentarioForm, IntervencionDocumentoForm
@@ -144,16 +144,37 @@ class ListaReunionesView(ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+
+        # Filtros
         estado = self.request.GET.get("estado")
+        proyecto = self.request.GET.get("proyecto")
+        frente = self.request.GET.get("frente")
+
         if estado:
             queryset = queryset.filter(estado=estado)
+        if proyecto:
+            queryset = queryset.filter(proyecto_id=proyecto)
+        if frente:
+            queryset = queryset.filter(frente_id=frente)
+
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         context["estado_actual"] = self.request.GET.get("estado", "")
-        context["estados_disponibles"] = Reunion.objects.values_list("estado", flat=True).distinct()
+        context["proyecto_actual"] = self.request.GET.get("proyecto", "")
+        context["frente_actual"] = self.request.GET.get("frente", "")
+
+        # Opciones disponibles para los select
+        context["estados_disponibles"] = (
+            Reunion.objects.values_list("estado", flat=True).distinct()
+        )
+        context["proyectos_disponibles"] = Proyecto.objects.all()
+        context["frentes_disponibles"] = Frente.objects.all()
+
         return context
+
 
 class GraficoReunionesView(TemplateView):
     template_name = "mi_aplicacion/grafico_reuniones.html"
