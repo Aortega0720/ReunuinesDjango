@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-jv=txc*788pz*$rj+wmda@a4t6jst12&($r4!i8l1j208^-_k&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -131,3 +131,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://seguimiento.rmbc.gov.co',
+    'http://127.0.0.1:8083',
+    'http://localhost:8083'
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
