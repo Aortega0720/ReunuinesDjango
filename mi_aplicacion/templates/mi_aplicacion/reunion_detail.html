@@ -20,6 +20,14 @@
     {% if reunion.fecha_fin %}
       <p><strong>📅 Fecha de finalización:</strong> {{ reunion.fecha_fin|date:"d/m/Y H:i" }}</p>
     {% endif %}
+
+    {% if reunion.proyecto %}
+      <p><strong>🏗️ Proyecto:</strong> {{ reunion.proyecto.nombre }}</p>
+    {% endif %}
+    {% if reunion.frente %}
+      <p><strong>📍 Frente:</strong> {{ reunion.frente.nombre }}</p>
+    {% endif %}
+
     <p>
       <strong>📌 Estado:</strong>
       {% if reunion.estado == "cerrada" %}
@@ -65,7 +73,7 @@
         {% endfor %}
       </ul>
     </div>
-    {% endif %}
+  {% endif %}
 
   <hr>
 
@@ -91,9 +99,7 @@
             <p class="fs-5">{{ intervencion.contenido|linebreaks }}</p>
             {% if intervencion.documentos.exists %}
               <div class="documentos mt-3">
-                  <h5 class="text-primary">
-                      📎 Documentos adjuntos:
-                  </h5>
+                  <h5 class="text-primary">📎 Documentos adjuntos:</h5>
                   <div class="row g-2">
                       {% for doc in intervencion.documentos.all %}
                           <div class="col-md-6 col-lg-4">
@@ -109,7 +115,7 @@
                       {% endfor %}
                   </div>
               </div>
-          {% endif %}
+            {% endif %}
 
             <h6 class="mt-4">💬 Comentarios</h6>
             <ul class="list-group list-group-flush mb-3">
