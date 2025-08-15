@@ -9,7 +9,7 @@
 
 <h1 class="mb-4">Listado de Reuniones</h1>
 
-<!-- FILTRO POR PROYECTO (igual que antes) -->
+<!-- FILTRO POR PROYECTO -->
 <form method="get" class="mb-4 d-flex align-items-center g-2">
   <div class="me-2">
     <label for="proyectoSelect" class="form-label visually-hidden">Proyecto</label>
@@ -30,24 +30,21 @@
   {% endif %}
 </form>
 
-{# ACCORDION DE FRENTES pero sin tocar el estilo del contenedor de reuniones (row g-3, cards, etc.) #}
 {% if grouped_reuniones %}
 <div class="accordion" id="accordionFrentes">
   {% for grupo in grouped_reuniones %}
-    <div class="accordion-item mb-3">
+    <div class="accordion-item mb-3 border-0 shadow-sm rounded">
       <h2 class="accordion-header" id="heading{{ forloop.counter }}">
         <button
-          class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+          class="accordion-button {% if not forloop.first %}collapsed{% endif %} bg-light fw-bold"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#collapse{{ forloop.counter }}"
           aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
           aria-controls="collapse{{ forloop.counter }}"
         >
-          <div class="d-flex align-items-center">
-            <strong class="me-2">{{ grupo.frente }}</strong>
-            <small class="text-muted">({{ grupo.count }})</small>
-          </div>
+          {{ grupo.frente }}
+          <span class="badge bg-primary ms-2">{{ grupo.count }}</span>
         </button>
       </h2>
 
@@ -58,15 +55,17 @@
         data-bs-parent="#accordionFrentes"
       >
         <div class="accordion-body">
-          {# <-- Aquí mantenemos exactamente el mismo contenedor / grilla que usabas antes --> #}
           <div class="row g-3">
             {% for reunion in grupo.reuniones %}
               <div class="col-md-6 col-lg-4">
                 <div class="card shadow-sm h-100 border-0">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <h5 class="card-title">{{ reunion.titulo }}</h5>
+                  <div class="card-body p-3">
 
+                    <!-- Título y estado -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="mb-0 fw-semibold text-truncate" title="{{ reunion.titulo }}">
+                        {{ reunion.titulo }}
+                      </h6>
                       {% if reunion.estado == "cerrada" %}
                         <span class="badge bg-success">Cerrada</span>
                       {% elif reunion.estado == "en_proceso" %}
@@ -78,37 +77,47 @@
                       {% endif %}
                     </div>
 
-                    <p class="card-subtitle text-muted mb-2">
-                      📅 {{ reunion.fecha|date:"d/m/Y H:i" }}
+                    <!-- Fecha, proyecto y frente -->
+                    <div class="small text-muted mb-2">
+                      <i class="bi bi-calendar-event"></i>
+                      {{ reunion.fecha|date:"d/m/Y H:i" }}
                       {% if reunion.proyecto %}
-                        • <strong>Proyecto:</strong> {{ reunion.proyecto.nombre }}
+                        <br><i class="bi bi-diagram-3"></i> <strong>{{ reunion.proyecto.nombre }}</strong>
                       {% endif %}
                       {% if reunion.frente %}
-                        • <strong>Frente:</strong> {{ reunion.frente.nombre }}
+                        <br><i class="bi bi-collection"></i> {{ reunion.frente.nombre }}
                       {% endif %}
-                    </p>
+                    </div>
 
+                    <!-- Etiquetas -->
                     {% if reunion.etiquetas.exists %}
                       <div class="mb-2">
                         {% for etiqueta in reunion.etiquetas.all %}
-                          <span class="badge bg-primary">{{ etiqueta.nombre }}</span>
+                          <span class="badge bg-primary-subtle text-primary border border-primary me-1">
+                            {{ etiqueta.nombre }}
+                          </span>
                         {% endfor %}
                       </div>
                     {% endif %}
 
-                    <p class="card-text">
-                      {{ reunion.descripcion|truncatewords:20 }}
+                    <!-- Descripción -->
+                    <p class="small text-secondary mb-3">
+                      {{ reunion.descripcion|truncatewords:15 }}
                     </p>
 
-                    <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
+                    <!-- Botón -->
+                    <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-sm btn-outline-primary w-100">
                       Ver detalles
                     </a>
                   </div>
                 </div>
               </div>
+            {% empty %}
+              <div class="col-12">
+                <div class="alert alert-info p-2 mb-0">No hay reuniones en este frente.</div>
+              </div>
             {% endfor %}
           </div>
-          {# fin del contenedor original #}
         </div>
       </div>
     </div>
@@ -118,7 +127,7 @@
   <div class="alert alert-info">No hay reuniones todavía.</div>
 {% endif %}
 
-{# PAGINACIÓN: mantenemos la misma lógica para conservar filtros #}
+<!-- Paginación -->
 {% if is_paginated %}
   <div class="d-flex justify-content-between align-items-center mt-4">
     {% if page_obj.has_previous %}
@@ -126,7 +135,9 @@
     {% else %}
       <span></span>
     {% endif %}
+
     <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
     {% if page_obj.has_next %}
       <a href="?{% if proyecto_actual %}proyecto={{ proyecto_actual }}&{% endif %}page={{ page_obj.next_page_number }}" class="btn btn-outline-primary btn-sm">Siguiente »</a>
     {% else %}
