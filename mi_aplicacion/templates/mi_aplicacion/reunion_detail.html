@@ -16,10 +16,26 @@
   <div class="mb-4">
     <p><strong>🧑‍🤝‍🧑 Grupo:</strong> {{ reunion.grupo_trabajo.nombre }}</p>
     <p><strong>📝 Descripción:</strong> {{ reunion.descripcion }}</p>
-    <p><strong>📅 Fecha de inicio:</strong> {{ reunion.fecha_inicio|date:"d/m/Y H:i" }}</p>
-    {% if reunion.fecha_fin %}
-      <p><strong>📅 Fecha de finalización:</strong> {{ reunion.fecha_fin|date:"d/m/Y H:i" }}</p>
+    <p><strong>📅 Fecha de inicio:</strong> {{ reunion.fecha|date:"d/m/Y H:i" }}</p>
+    {% if reunion.fecha_finalizacion %}
+      <p><strong>📅 Fecha de finalización:</strong> {{ reunion.fecha_finalizacion|date:"d/m/Y H:i" }}</p>
     {% endif %}
+     <!-- Estado vencida / días restantes -->
+      {% if reunion.fecha_finalizacion %}
+        {% if reunion.estado_vencida %}
+          <div class="mb-2">
+            <span class="badge bg-danger">
+              ⚠ Vencida (hace {{ reunion.dias_restantes}} días)
+            </span>
+          </div>
+        {% else %}
+          <div class="mb-2">
+            <span class="badge bg-success">
+              ⏳ Faltan {{ reunion.dias_restantes }} días
+            </span>
+          </div>
+        {% endif %}
+      {% endif %}
 
     {% if reunion.proyecto %}
       <p><strong>🏗️ Proyecto:</strong> {{ reunion.proyecto.nombre }}</p>
@@ -46,6 +62,14 @@
           <span class="badge bg-primary">{{ etiqueta.nombre }}</span>
         {% endfor %}
       </p>
+    {% endif %}
+    {% if reunion.responsables.exists %}
+      <div class="mb-2">
+        <i class="bi bi-people"></i> 
+        {% for user in reunion.responsables.all %}
+          <span class="badge bg-info text-dark me-1">{{ user.username }}</span>
+        {% endfor %}
+      </div>
     {% endif %}
   </div>
 

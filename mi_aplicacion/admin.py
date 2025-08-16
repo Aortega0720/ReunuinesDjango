@@ -9,7 +9,7 @@ class GrupoTrabajoAdmin(admin.ModelAdmin):
 
 @admin.register(Reunion)
 class ReunionAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'descripcion' ,'fecha', 'grupo_trabajo')
+    list_display = ('titulo', 'estado', 'fecha', 'fecha_finalizacion', 'grupo_trabajo')
 
 admin.site.register(Intervencion)
 admin.site.register(Comentario)

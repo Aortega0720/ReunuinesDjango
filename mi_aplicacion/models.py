@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 class GrupoTrabajo(models.Model):
     nombre = models.CharField(max_length=100)
@@ -57,15 +58,15 @@ class Reunion(models.Model):
     ]
 
     proyecto = models.ForeignKey(
-        Proyecto,
+        'Proyecto',
         on_delete=models.CASCADE,
         related_name='reuniones',
-        null=True,  # temporal si ya tienes datos, ver nota abajo
+        null=True,
         blank=True
     )
     frente = models.ForeignKey(
-        Frente,
-        on_delete=models.SET_NULL,   # si borran el frente, dejamos NULL
+        'Frente',
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='reuniones'
@@ -73,11 +74,24 @@ class Reunion(models.Model):
 
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
-    fecha = models.DateTimeField(auto_now_add=True)
+
+    fecha = models.DateTimeField(auto_now_add=True)   
+    fecha_finalizacion = models.DateTimeField(null=True, blank=True) 
+
     estado = models.CharField(max_length=20, choices=ESTADOS, default='sin_iniciar')
-    grupo_trabajo = models.ForeignKey(GrupoTrabajo, on_delete=models.CASCADE, related_name='reuniones')
-    etiquetas = models.ManyToManyField(Etiqueta, blank=True, related_name="reuniones")
-    documentos = models.ManyToManyField(Documento, blank=True, related_name="reuniones")
+    grupo_trabajo = models.ForeignKey(
+        'GrupoTrabajo',
+        on_delete=models.CASCADE,
+        related_name='reuniones'
+    )
+    etiquetas = models.ManyToManyField('Etiqueta', blank=True, related_name="reuniones")
+    documentos = models.ManyToManyField('Documento', blank=True, related_name="reuniones")
+
+    responsables = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="reuniones_responsables"
+    )
 
     def __str__(self):
         proyecto_nombre = getattr(self.proyecto, 'nombre', 'Sin proyecto')

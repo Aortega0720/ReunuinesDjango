@@ -77,20 +77,52 @@
                       {% endif %}
                     </div>
 
-                    <!-- Fecha, proyecto y frente -->
+                    <!-- Fechas -->
                     <div class="small text-muted mb-2">
-                      <i class="bi bi-calendar-event"></i>
-                      {{ reunion.fecha|date:"d/m/Y H:i" }}
-                      {% if reunion.proyecto %}
-                        <br><i class="bi bi-diagram-3"></i> <strong>{{ reunion.proyecto.nombre }}</strong>
-                      {% endif %}
-                      {% if reunion.frente %}
-                        <br><i class="bi bi-collection"></i> {{ reunion.frente.nombre }}
-                      {% endif %}
+                      <i class="bi bi-plus-circle"></i> Creada: {{ reunion.fecha_creacion|date:"d/m/Y H:i" }}<br>
+                      <i class="bi bi-calendar-event"></i> Inicio: {{ reunion.fecha|date:"d/m/Y H:i" }}<br>
+                      <i class="bi bi-calendar-check"></i> Finalización: {{ reunion.fecha_finalizacion|date:"d/m/Y H:i" }}
                     </div>
 
+                    <!-- Estado vencida / días restantes -->
+                    {% if reunion.fecha_finalizacion %}
+                      {% if reunion.estado_vencida %}
+                        <div class="mb-2">
+                          <span class="badge bg-danger">
+                            ⚠ Vencida (hace {{ reunion.dias_restantes}} días)
+                          </span>
+                        </div>
+                      {% else %}
+                        <div class="mb-2">
+                          <span class="badge bg-success">
+                            ⏳ Faltan {{ reunion.dias_restantes }} días
+                          </span>
+                        </div>
+                      {% endif %}
+                    {% endif %}
+
+                    <!-- Proyecto y frente -->
+                    <!-- <div class="small text-muted mb-2">
+                      {% if reunion.proyecto %}
+                        <i class="bi bi-diagram-3"></i> <strong>{{ reunion.proyecto.nombre }}</strong><br>
+                      {% endif %}
+                      {% if reunion.frente %}
+                        <i class="bi bi-collection"></i> {{ reunion.frente.nombre }}
+                      {% endif %}
+                    </div> -->
+
+                    <!-- Responsables -->
+                    {% if reunion.responsables.exists %}
+                      <div class="mb-2">
+                        <i class="bi bi-people"></i> 
+                        {% for user in reunion.responsables.all %}
+                          <span class="badge bg-info text-dark me-1">{{ user.username }}</span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+
                     <!-- Etiquetas -->
-                    {% if reunion.etiquetas.exists %}
+                    <!-- {% if reunion.etiquetas.exists %}
                       <div class="mb-2">
                         {% for etiqueta in reunion.etiquetas.all %}
                           <span class="badge bg-primary-subtle text-primary border border-primary me-1">
@@ -98,12 +130,12 @@
                           </span>
                         {% endfor %}
                       </div>
-                    {% endif %}
+                    {% endif %} -->
 
                     <!-- Descripción -->
-                    <p class="small text-secondary mb-3">
+                    <!-- <p class="small text-secondary mb-3">
                       {{ reunion.descripcion|truncatewords:15 }}
-                    </p>
+                    </p> -->
 
                     <!-- Botón -->
                     <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-sm btn-outline-primary w-100">

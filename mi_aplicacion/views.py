@@ -21,7 +21,7 @@ from operator import attrgetter
 from reportlab.lib.units import inch, cm
 from reportlab.pdfgen import canvas
 from django.contrib.staticfiles import finders
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from reportlab.lib.enums import TA_JUSTIFY
 import os
 
@@ -30,18 +30,19 @@ class ReunionListView(ListView):
     model = Reunion
     template_name = 'mi_aplicacion/reunion_list.html'
     context_object_name = 'reuniones'
-    paginate_by = 9  # ajustar si quieres más/menos por página
+    paginate_by = 9
 
     def get_queryset(self):
         qs = (
             Reunion.objects
             .select_related('grupo_trabajo', 'proyecto', 'frente')
-            .prefetch_related('etiquetas')
+            .prefetch_related('etiquetas', 'responsables')
         ).order_by(
-            'frente__nombre',  # ordenar por frente primero para el groupby
+            'frente__nombre', 
             '-fecha'
         )
 
+        # Filtro por proyecto
         proyecto_pk = self.request.GET.get('proyecto')
         if proyecto_pk:
             try:
@@ -49,7 +50,7 @@ class ReunionListView(ListView):
             except (ValueError, TypeError):
                 pass
 
-        # también filtrar por frente si se pasa (opcional)
+        # Filtro por frente
         frente_pk = self.request.GET.get('frente')
         if frente_pk:
             try:
@@ -62,28 +63,29 @@ class ReunionListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Proyectos para el select
+        # Proyectos para el filtro
         context['proyectos'] = Proyecto.objects.order_by('nombre')
         context['proyecto_actual'] = self.request.GET.get('proyecto', '')
         context['frente_actual'] = self.request.GET.get('frente', '')
 
-        # Agrupar las reuniones de la página actual por frente
+        # Agrupar reuniones de la página actual por frente
         page_qs = context.get('page_obj').object_list if context.get('page_obj') else list(context.get('reuniones', []))
 
-        # Normalizar nombre de frente (si None -> 'Sin frente')
+        today = date.today()
+
+        # Enriquecer cada reunión con estado y días restantes
+        for reunion in page_qs:
+            if reunion.fecha_finalizacion:
+                diff = (reunion.fecha_finalizacion.date() - today).days
+                reunion.dias_restantes = abs(diff)  
+                reunion.estado_vencida = diff < 0
+            else:
+                reunion.dias_restantes = None
+                reunion.estado_vencida = False
+
         def frente_name(item):
             return item.frente.nombre if getattr(item, 'frente', None) else 'Sin frente'
 
-        # `page_qs` ya viene ordenado por frente__nombre en get_queryset, por eso groupby funciona
-        grouped = []
-        for name, group in groupby(page_qs, key=frente_name):
-            grouped.append({
-                'frente': name,
-                'reuniones': list(group),
-                'count': sum(1 for _ in group)  # aunque ya consumimos group al list(group), keep count from list length
-            })
-
-        # Correction: above consumed group; better compute from list length:
         grouped = []
         for name, group in groupby(page_qs, key=frente_name):
             items = list(group)
@@ -104,11 +106,24 @@ class ReunionDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        reunion = self.object
+        today = date.today()
+
+        # 🔹 Calcular estado y días restantes
+        if reunion.fecha_finalizacion:
+            diff = (reunion.fecha_finalizacion.date() - today).days
+            reunion.dias_restantes = abs(diff)  # se usa abs para mostrar días positivos
+            reunion.estado_vencida = diff < 0
+        else:
+            reunion.dias_restantes = None
+            reunion.estado_vencida = False
+
+        # 🔹 Formularios
         context['form_intervencion'] = IntervencionForm()
-        context['form_documento'] = IntervencionDocumentoForm()  # ← Añadimos el formulario de documento
+        context['form_documento'] = IntervencionDocumentoForm()
         context['comentario_forms'] = {
             intervencion.pk: ComentarioForm(prefix=str(intervencion.pk))
-            for intervencion in self.object.intervenciones.all()
+            for intervencion in reunion.intervenciones.all()
         }
         return context
 
@@ -136,7 +151,6 @@ class ReunionDetailView(LoginRequiredMixin, DetailView):
             intervencion.autor = request.user
             intervencion.save()
 
-            # Si hay documento, guardarlo
             if form_documento.is_valid() and form_documento.cleaned_data.get('archivo'):
                 doc = form_documento.save(commit=False)
                 doc.intervencion = intervencion
@@ -406,3 +420,6 @@ class ActasPorProyectoView(ListView):
         context["proyectos"] = Proyecto.objects.all()
         context["proyecto_seleccionado"] = self.request.GET.get("proyecto")
         return context
+    
+class HomeView(TemplateView):
+    template_name = 'mi_aplicacion/home.html'
