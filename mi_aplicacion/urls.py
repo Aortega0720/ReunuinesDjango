@@ -4,7 +4,7 @@ from .views import (
     ReunionListView, ReunionDetailView, ListaReunionesView,
     GraficoReunionesView, ExportarReunionesExcelView,
     SitioConstruccionView, ActaReunionPDFView,
-    DocumentosView, ActasPorProyectoView,HomeView
+    DocumentosView, ActasPorProyectoView,HomeView,ExportarProyectoPDF
 )
 
 app_name = 'mi_aplicacion'
@@ -20,5 +20,6 @@ urlpatterns = [
     path('documentos/', DocumentosView.as_view(), name='documentos'),
     path('actas/', ActasPorProyectoView.as_view(), name='actas_por_proyecto'),
     path('', HomeView.as_view(), name='home'),
+    path('proyecto/<int:pk>/exportar_pdf/', ExportarProyectoPDF.as_view(), name='exportar_proyecto_pdf'),
 ]
 

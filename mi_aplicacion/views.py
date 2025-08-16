@@ -1,6 +1,6 @@
 ﻿# tu_app/views.py
 from django.views.generic import ListView, DetailView, TemplateView
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, ListFlowable, ListItem
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, ListFlowable, ListItem, PageBreak
 from .models import Reunion, Intervencion, Comentario, Proyecto,Frente
 from django.shortcuts import redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -423,3 +423,112 @@ class ActasPorProyectoView(ListView):
     
 class HomeView(TemplateView):
     template_name = 'mi_aplicacion/home.html'
+
+class ExportarProyectoPDF(View):
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            proyecto = Proyecto.objects.get(pk=pk)
+        except Proyecto.DoesNotExist:
+            raise Http404("El proyecto no existe")
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Proyecto_{proyecto.nombre}.pdf"'
+
+        doc = SimpleDocTemplate(
+            response,
+            pagesize=A4,
+            rightMargin=2 * cm,
+            leftMargin=2 * cm,
+            topMargin=5 * cm,
+            bottomMargin=3 * cm
+        )
+        styles = getSampleStyleSheet()
+        elementos = []
+
+        # Estilos personalizados
+        estilo_titulo = ParagraphStyle(
+            name="Titulo",
+            fontSize=14,
+            leading=16,
+            spaceAfter=12,
+            alignment=TA_JUSTIFY
+        )
+
+        estilo_subtitulo = ParagraphStyle(
+            name="Subtitulo",
+            fontSize=12,
+            leading=14,
+            spaceAfter=6,
+            alignment=TA_JUSTIFY,
+            fontName="Helvetica-Bold"
+        )
+
+        estilo_texto = ParagraphStyle(
+            name="Texto",
+            fontSize=10,
+            leading=12,
+            spaceAfter=4,
+            alignment=TA_JUSTIFY
+        )
+
+        estilo_intervencion = ParagraphStyle(
+            name="Intervencion",
+            fontSize=10,
+            leading=14,
+            spaceAfter=6,
+            alignment=TA_JUSTIFY
+        )
+
+        estilo_comentario = ParagraphStyle(
+            name="Comentario",
+            fontSize=10,
+            leading=12,
+            leftIndent=1*cm,
+            spaceAfter=4,
+            alignment=TA_JUSTIFY,
+            fontName="Helvetica-Oblique"
+        )
+
+        # Header y Footer
+        def header_footer(canvas, doc):
+            banner_path = finders.find('img/banner.png')
+            if banner_path:
+                canvas.drawImage(banner_path, x=0, y=A4[1] - 4 * cm, width=A4[0], height=3 * cm)
+            footer_path = finders.find('img/footer.png')
+            if footer_path:
+                canvas.drawImage(footer_path, x=0, y=0, width=A4[0], height=2 * cm)
+
+        # Título del proyecto
+        elementos.append(Paragraph(f"<b>Proyecto:</b> {proyecto.nombre}", estilo_titulo))
+        elementos.append(Spacer(1, 12))
+
+        # Iterar reuniones
+        for reunion in proyecto.reuniones.all():
+            elementos.append(Paragraph(f"Reunión: {reunion.titulo} ({reunion.fecha.strftime('%d/%m/%Y')})", estilo_subtitulo))
+            elementos.append(Paragraph(f"<b>Fecha:</b> {reunion.fecha.strftime('%d/%m/%Y')}", styles["Normal"]))
+            elementos.append(Paragraph(f"<b>Proyecto:</b> {reunion.proyecto.nombre if reunion.proyecto else ''}", styles["Normal"]))
+            elementos.append(Paragraph(f"<b>Frente:</b> {reunion.frente.nombre if reunion.frente else ''}", styles["Normal"]))
+            elementos.append(Paragraph(f"<b>Estado:</b> {reunion.estado}", styles["Normal"]))
+            elementos.append(Paragraph(f"<b>Descripción:</b> {reunion.descripcion or ''}", styles["Normal"]))
+            elementos.append(Spacer(1, 12))
+
+             # Intervenciones y comentarios
+            elementos.append(Paragraph("<b>Intervenciones y Comentarios</b>", styles["Heading2"]))
+            elementos.append(Spacer(1, 6))
+
+            for intervencion in reunion.intervenciones.all():
+            # Intervención con autor en rojo
+                contenido_intervencion = f'<font color="red">{intervencion.autor.get_full_name()}</font>: {intervencion.contenido}'
+                elementos.append(Paragraph(contenido_intervencion, estilo_intervencion))
+
+                # Comentarios de la intervención con autor en rojo
+                for comentario in intervencion.comentarios.all():
+                    contenido_comentario = f'<font color="green">{comentario.autor.get_full_name()}</font>: {comentario.contenido}'
+                    elementos.append(Paragraph(contenido_comentario, estilo_comentario))
+
+                elementos.append(Spacer(1, 6))
+
+        # Construir el PDF
+        doc.build(elementos, onFirstPage=header_footer, onLaterPages=header_footer)
+
+        return response
