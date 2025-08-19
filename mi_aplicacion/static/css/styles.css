@@ -106,4 +106,27 @@ textarea.form-control:focus {
   box-shadow: 0 0 0 0.2rem rgba(74,144,226,0.25);
 }
 
+@media (max-width: 768px) {
+    body {
+        display: block; /* rompe el flex, sidebar ya no ocupa columna */
+    }
+
+    .sidebar {
+        position: relative;   /* deja de estar fija */
+        width: 100%;          /* ocupa arriba todo el ancho */
+        height: auto;         /* no ocupa toda la altura */
+    }
+
+    .main-content {
+        margin-left: 0 !important;  /* quita espacio reservado */
+        width: 100% !important;     /* ocupa todo el ancho */
+        padding: 15px !important;
+    }
+
+    .sidebar-footer {
+        position: relative;
+        bottom: 0;
+        width: 100%;
+    }
+}
 

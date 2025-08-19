@@ -2,49 +2,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Panel Empresa{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/construccion.css' %}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Panel Empresa{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- Header con logo -->
-        <div class="sidebar-header">
-            <img src="{% static 'img/logo (2).svg' %}" alt="Logo Empresa">
-        </div>
-
-        <!-- Menú -->
-        <nav class="nav flex-column">
-            <a class="nav-link" href="{% url 'mi_aplicacion:reunion_list' %}">Actividades</a>
-            <a class="nav-link" href="{% url 'mi_aplicacion:lista_reuniones_info' %}">Informe</a>
-            <a class="nav-link" href="{% url 'mi_aplicacion:grafico_reuniones' %}">Gráficas</a>
-            <a class="nav-link" href="{% url 'mi_aplicacion:documentos' %}">Documentos</a>
-            <a class="nav-link" href="{% url 'mi_aplicacion:sitio_construccion' %}">Salir</a>
-        </nav>
-
-        <!-- Footer -->
-        <div class="sidebar-footer">
-            &copy; {{ year }} RMBC (Antonio Ortega)
-            <br>
-            <a href="{% url 'mi_aplicacion:sitio_construccion' %}" class="text-white text-decoration-underline">Términos y Condiciones</a>
-        </div>
+  <!-- Navbar móvil -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark d-lg-none">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="{% static 'img/logo (2).svg' %}" alt="Logo Empresa" style="height:30px;">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMobile" aria-controls="navbarMobile" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMobile">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:reunion_list' %}">Actividades</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:lista_reuniones_info' %}">Informe</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:grafico_reuniones' %}">Gráficas</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:documentos' %}">Documentos</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:sitio_construccion' %}">Salir</a></li>
+        </ul>
+      </div>
     </div>
+  </nav>
 
-    <!-- Contenido principal -->
-    <div class="main-content">
-        {% block content %}{% endblock %}
+  <!-- Sidebar escritorio -->
+  <div class="sidebar d-none d-lg-flex flex-column">
+    <div class="sidebar-header">
+      <img src="{% static 'img/logo (2).svg' %}" alt="Logo Empresa">
     </div>
+    <nav class="nav flex-column">
+      <a class="nav-link" href="{% url 'mi_aplicacion:reunion_list' %}">Actividades</a>
+      <a class="nav-link" href="{% url 'mi_aplicacion:lista_reuniones_info' %}">Informe</a>
+      <a class="nav-link" href="{% url 'mi_aplicacion:grafico_reuniones' %}">Gráficas</a>
+      <a class="nav-link" href="{% url 'mi_aplicacion:documentos' %}">Documentos</a>
+      <a class="nav-link" href="{% url 'mi_aplicacion:sitio_construccion' %}">Salir</a>
+    </nav>
+    <div class="sidebar-footer mt-auto">
+      &copy; {{ year }} RMBC (Antonio Ortega) <br>
+      <a href="{% url 'mi_aplicacion:sitio_construccion' %}" class="text-white text-decoration-underline">Términos y Condiciones</a>
+    </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Contenido principal -->
+  <main class="main-content flex-grow-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer global (solo se muestra abajo en móvil, sidebar en escritorio) -->
+  <footer class="footer bg-dark text-white text-center py-3 d-lg-none mt-auto">
+    &copy; {{ year }} RMBC (Antonio Ortega) <br>
+    <a href="{% url 'mi_aplicacion:sitio_construccion' %}" class="text-white text-decoration-underline">Términos y Condiciones</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
