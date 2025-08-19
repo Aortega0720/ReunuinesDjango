@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Listado de Reuniones{% endblock %}
+{% block title %}Listado de Actividades{% endblock %}
 
 {% block content %}
 
@@ -7,7 +7,7 @@
   <i class="bi bi-arrow-left"></i> Volver
 </a>
 
-<h1 class="mb-4">Listado de Reuniones</h1>
+<h1 class="mb-4">Listado de Actividades</h1>
 
 <!-- FILTRO POR PROYECTO -->
 <form method="get" class="mb-4 d-flex align-items-center g-2">
@@ -146,7 +146,7 @@
               </div>
             {% empty %}
               <div class="col-12">
-                <div class="alert alert-info p-2 mb-0">No hay reuniones en este frente.</div>
+                <div class="alert alert-info p-2 mb-0">No hay actividades en este frente.</div>
               </div>
             {% endfor %}
           </div>
@@ -156,7 +156,7 @@
   {% endfor %}
 </div>
 {% else %}
-  <div class="alert alert-info">No hay reuniones todavía.</div>
+  <div class="alert alert-info">No hay actividades todavía.</div>
 {% endif %}
 
 <!-- Paginación -->

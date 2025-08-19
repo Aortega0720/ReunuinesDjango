@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Lista de Reuniones{% endblock %}
+{% block title %}Lista de Actividades{% endblock %}
 
 {% block content %}
 <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
@@ -8,7 +8,7 @@
 </a>
 
 <div class="container my-4">
-    <h1 class="mb-4">📋 Informe de Reuniones</h1>
+    <h1 class="mb-4">📋 Informe de Actividades</h1>
 
    <!-- Formulario de filtro -->
 <form method="get" class="mb-3 row g-2">
@@ -145,7 +145,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="12" class="text-center text-muted">No hay reuniones registradas.</td>
+            <td colspan="12" class="text-center text-muted">No hay actividades registradas.</td>
         </tr>
         {% endfor %}
     </tbody>

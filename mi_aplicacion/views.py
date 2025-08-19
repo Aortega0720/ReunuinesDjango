@@ -269,7 +269,7 @@ class ExportarReunionesExcelView(View):
         # Crear libro y hoja
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "Reuniones"
+        ws.title = "Actividades"
 
         # Encabezados
         ws.append([
@@ -318,7 +318,7 @@ class ExportarReunionesExcelView(View):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response["Content-Disposition"] = 'attachment; filename="reuniones.xlsx"'
+        response["Content-Disposition"] = 'attachment; filename="Actividades.xlsx"'
         wb.save(response)
         return response
     
@@ -337,7 +337,7 @@ class ActaReunionPDFView(View):
 
         # Configuración del PDF
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="Acta_Reunion_{reunion.id}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="Informe_{reunion.id}.pdf"'
 
         doc = SimpleDocTemplate(response, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=5*cm, bottomMargin=3*cm)
         styles = getSampleStyleSheet()
@@ -373,7 +373,7 @@ class ActaReunionPDFView(View):
 
         # Encabezado del contenido
         elementos.append(Spacer(1, 12))
-        elementos.append(Paragraph("<b>Acta de Reunión</b>", styles["Title"]))
+        elementos.append(Paragraph("<b>Informe de actividad</b>", styles["Title"]))
         elementos.append(Spacer(1, 12))
 
         # Datos generales

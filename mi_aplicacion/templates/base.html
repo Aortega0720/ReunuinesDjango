@@ -9,6 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'css/construccion.css' %}">
 </head>
 <body class="d-flex flex-column min-vh-100">
 
@@ -27,7 +28,7 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:lista_reuniones_info' %}">Informe</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:grafico_reuniones' %}">Gráficas</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:documentos' %}">Documentos</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'mi_aplicacion:sitio_construccion' %}">Salir</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/logout/">Salir</a></li>
         </ul>
       </div>
     </div>
