@@ -170,9 +170,9 @@ class ListaReunionesView(ListView):
     context_object_name = "reuniones"
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related("proyecto", "frente", "grupo_trabajo")
 
-        # Filtros
+        # Capturar filtros del request
         estado = self.request.GET.get("estado")
         proyecto = self.request.GET.get("proyecto")
         frente = self.request.GET.get("frente")
@@ -184,21 +184,31 @@ class ListaReunionesView(ListView):
         if frente:
             queryset = queryset.filter(frente_id=frente)
 
+        # Calcular días restantes o vencido
+        hoy = date.today()
+        for reunion in queryset:
+            if reunion.fecha_finalizacion:
+                diferencia = (reunion.fecha_finalizacion.date() - hoy).days
+                reunion.dias_restantes = abs(diferencia) if diferencia < 0 else diferencia
+                reunion.vencido = diferencia < 0
+            else:
+                reunion.dias_restantes = None
+                reunion.vencido = None
+
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Valores disponibles para los select
+        context["estados_disponibles"] = [e[0] for e in Reunion.ESTADOS]  # ejemplo: ["pendiente", "en_progreso", "cerrada"]
+        context["proyectos_disponibles"] = Proyecto.objects.all()
+        context["frentes_disponibles"] = Frente.objects.all()
+
+        # Mantener selección actual
         context["estado_actual"] = self.request.GET.get("estado", "")
         context["proyecto_actual"] = self.request.GET.get("proyecto", "")
         context["frente_actual"] = self.request.GET.get("frente", "")
-
-        # Opciones disponibles para los select
-        context["estados_disponibles"] = (
-            Reunion.objects.values_list("estado", flat=True).distinct()
-        )
-        context["proyectos_disponibles"] = Proyecto.objects.all()
-        context["frentes_disponibles"] = Frente.objects.all()
 
         return context
 
@@ -280,13 +290,31 @@ class ExportarReunionesExcelView(View):
 
         # Encabezados
         ws.append([
-            "ID", "Título", "Proyecto", "Frente", "Grupo", 
-            "Fecha", "Estado", "Etiquetas", "Descripción"
+            "ID", "Título", "Proyecto", "Frente", "Grupo",
+            "Fecha Inicio", "Fecha Finalización", "Estado",
+            "Etiquetas", "Descripción", "Vencido", "Tiempo Restante"
         ])
 
         # Filas con datos
         for r in reuniones:
             etiquetas_texto = ", ".join(str(e) for e in r.etiquetas.all())
+
+            # Valores por defecto
+            vencido = "N/A"
+            tiempo_texto = ""
+
+            if r.fecha_finalizacion:
+                dias_restantes = (r.fecha_finalizacion.date() - date.today()).days
+
+                if dias_restantes < 0:
+                    vencido = "Sí"
+                    tiempo_texto = f"Vencido hace {abs(dias_restantes)} días"
+                elif dias_restantes == 0:
+                    vencido = "No"
+                    tiempo_texto = "Vence hoy"
+                else:
+                    vencido = "No"
+                    tiempo_texto = f"Faltan {dias_restantes} días"
 
             ws.append([
                 r.id,
@@ -295,9 +323,12 @@ class ExportarReunionesExcelView(View):
                 r.frente.nombre if r.frente else "",
                 r.grupo_trabajo.nombre if r.grupo_trabajo else "",
                 r.fecha.strftime("%d/%m/%Y") if r.fecha else "",
+                r.fecha_finalizacion.strftime("%d/%m/%Y") if r.fecha_finalizacion else "",
                 r.estado,
                 etiquetas_texto,
-                r.descripcion or ""
+                r.descripcion or "",
+                vencido,
+                tiempo_texto,
             ])
 
         # Preparar respuesta HTTP

@@ -10,8 +10,9 @@
 <div class="container my-4">
     <h1 class="mb-4">📋 Informe de Reuniones</h1>
 
-    <!-- Formulario de filtro -->
-    <form method="get" class="mb-3 row g-2">
+   <!-- Formulario de filtro -->
+<form method="get" class="mb-3 row g-2">
+
     <!-- Filtro estado -->
     <div class="col-auto">
         <select name="estado" class="form-select" onchange="this.form.submit()">
@@ -48,74 +49,106 @@
         </select>
     </div>
 
+    <!-- Botón Restablecer -->
     <div class="col-auto">
         <a href="{% url 'mi_aplicacion:lista_reuniones_info' %}" class="btn btn-secondary">Restablecer</a>
     </div>
+
     <!-- Exportar a Excel -->
-        <div class="mb-3">
-            <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}&proyecto={{ proyecto_actual }}&frente={{ frente_actual }}" 
-            class="btn btn-success">
-                <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-            </a>
-        </div>
+    <div class="col-auto">
+        <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}&proyecto={{ proyecto_actual }}&frente={{ frente_actual }}" 
+           class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+        </a>
+    </div>
 </form>
+
 
     <!-- Tabla -->
     <table class="table table-hover table-striped align-middle shadow-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Título</th>
-                <th>Proyecto</th>
-                <th>Frente</th>
-                <th>Grupo</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Etiquetas</th>
-                <th>Descripción</th>
-                <th>Detalles</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for reunion in reuniones %}
-            <tr>
-                <td>{{ reunion.id }}</td>
-                <td>{{ reunion.titulo }}</td>
-                <td>{{ reunion.proyecto.nombre }}</td>
-                <td>{{ reunion.frente.nombre }}</td>
-                <td>{{ reunion.grupo_trabajo.nombre }}</td>
-                <td>{{ reunion.fecha|date:"d/m/Y" }}</td>
-                <td>
-                    {% if reunion.estado == "cerrada" %}
-                        <span class="badge bg-success">Cerrada</span>
-                    {% elif reunion.estado == "en_proceso" %}
-                        <span class="badge bg-warning text-dark">En proceso</span>
+       <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Proyecto</th>
+            <th>Frente</th>
+            <th>Grupo</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Etiquetas</th>
+            <th>Descripción</th>
+            <th>Vencimiento Proyecto</th>
+            <th>Días Restantes</th>
+            <th>Detalles</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for reunion in reuniones %}
+        <tr>
+            <td>{{ reunion.id }}</td>
+            <td>{{ reunion.titulo }}</td>
+            <td>{{ reunion.proyecto.nombre }}</td>
+            <td>{{ reunion.frente.nombre }}</td>
+            <td>{{ reunion.grupo_trabajo.nombre }}</td>
+            <td>{{ reunion.fecha|date:"d/m/Y" }}</td>
+            <td>
+                {% if reunion.estado == "cerrada" %}
+                    <span class="badge bg-success">Cerrada</span>
+                {% elif reunion.estado == "en_proceso" %}
+                    <span class="badge bg-warning text-dark">En proceso</span>
+                {% else %}
+                    <span class="badge bg-danger">Sin iniciar</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if reunion.etiquetas.all %}
+                    {% for etiqueta in reunion.etiquetas.all %}
+                        <span class="badge bg-info text-dark">{{ etiqueta.nombre }}</span>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">Sin etiquetas</span>
+                {% endif %}
+            </td>
+            <td>{{ reunion.descripcion }}</td>
+
+            <!-- Vencido o no -->
+            <td>
+                {% if reunion.vencido == True %}
+                    <span class="badge bg-danger">Vencido</span>
+                {% elif reunion.vencido == False %}
+                    <span class="badge bg-success">Activo</span>
+                {% else %}
+                    <span class="text-muted">Sin fecha</span>
+                {% endif %}
+            </td>
+
+            <!-- Días restantes -->
+            <td>
+                {% if reunion.dias_restantes is not None %}
+                    {% if reunion.vencido %}
+                        <span class="text-danger">{{ reunion.dias_restantes }} días vencido</span>
+                    {% elif reunion.dias_restantes == 0 %}
+                        <span class="text-warning">Vence hoy</span>
                     {% else %}
-                        <span class="badge bg-danger">Sin iniciar</span>
+                        <span class="text-success">Faltan {{ reunion.dias_restantes }} días</span>
                     {% endif %}
-                </td>
-                 <td>
-                    {% if reunion.etiquetas.all %}
-                        {% for etiqueta in reunion.etiquetas.all %}
-                            <span class="badge bg-info text-dark">{{ etiqueta.nombre }}</span>
-                        {% endfor %}
-                    {% else %}
-                        <span class="text-muted">Sin etiquetas</span>
-                    {% endif %}
-                </td>
-                <td>{{ reunion.descripcion }}</td>
-                <td>
-                    <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
-                        Ver detalles
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="10" class="text-center text-muted">No hay reuniones registradas.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+                {% else %}
+                    <span class="text-muted">N/A</span>
+                {% endif %}
+            </td>
+
+            <td>
+                <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
+                    Ver detalles
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="12" class="text-center text-muted">No hay reuniones registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
     </table>
 </div>
 
