@@ -6,16 +6,6 @@
 
     <!-- Filtros -->
     <form method="get" action="{% url 'mi_aplicacion:grafico_reuniones' %}" class="row g-3 mb-4">
-        <!-- <div class="col-md-3">
-            <label for="estado" class="form-label">Estado</label>
-            <select name="estado" id="estado" class="form-select">
-                <option value="">Todos</option>
-                <option value="en_proceso" {% if estado_seleccionado == "en_proceso" %}selected{% endif %}>En_proceso</option>
-                <option value="cerrada" {% if estado_seleccionado == "cerrada" %}selected{% endif %}>Cerrada</option>
-                <option value="Sin iniciar" {% if estado_seleccionado == "Sin iniciar" %}selected{% endif %}>Sin iniciar</option>
-            </select>
-        </div> -->
-
         <div class="col-md-3">
             <label for="proyecto" class="form-label">Proyecto</label>
             <select name="proyecto" id="proyecto" class="form-select">
@@ -27,19 +17,6 @@
                 {% endfor %}
             </select>
         </div>
-
-        <!-- <div class="col-md-3">
-            <label for="frente" class="form-label">Frente</label>
-            <select name="frente" id="frente" class="form-select">
-                <option value="">Todos</option>
-                {% for f in frentes %}
-                    <option value="{{ f.id }}" {% if frente_seleccionado == f.id|stringformat:"s" %}selected{% endif %}>
-                        {{ f.nombre }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div> -->
-
         <div class="col-md-3 d-flex align-items-end">
             <button type="submit" class="btn btn-success w-100">🔍 Filtrar</button>
         </div>
@@ -68,7 +45,9 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const estados = {{ estados|safe }};
@@ -79,35 +58,83 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
 
+    const total = cantidades.reduce((a, b) => a + b, 0);
+
     const colores = ['rgba(40,167,69,0.7)','rgba(255,193,7,0.7)','rgba(220,53,69,0.7)'];
     const bordes  = ['rgba(40,167,69,1)','rgba(255,193,7,1)','rgba(220,53,69,1)'];
 
-    // const colores = ['rgba(255,193,7,0.7)','rgba(220,53,69,0.7)','rgba(40,167,69,0.7)'];
-    // const bordes  = ['rgba(255,193,7,1)','rgba(220,53,69,1)','rgba(40,167,69,1)'];
-
+    // Pie Chart
     new Chart(document.getElementById('chartPie'), {
         type: 'pie',
-        data: { labels: estados, datasets: [{ data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }] }
+        data: { 
+            labels: estados, 
+            datasets: [{ data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }] 
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
+                    color: '#fff',
+                    font: { weight: 'bold' }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
     });
 
+    // Bar Chart
     new Chart(document.getElementById('chartBar'), {
         type: 'bar',
-        data: { labels: estados, datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: colores }] },
-        options: { responsive: true }
+        data: { 
+            labels: estados, 
+            datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: colores }] 
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
+                    color: '#000'
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
     });
 
+    // Line Chart
     new Chart(document.getElementById('chartLine'), {
         type: 'line',
-        data: { labels: estados, datasets: [{ label: 'Evolución', data: cantidades, borderColor: 'blue', tension: 0.3 }] }
+        data: { 
+            labels: estados, 
+            datasets: [{ label: 'Evolución', data: cantidades, borderColor: 'blue', tension: 0.3 }] 
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    align: 'top',
+                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
+                    color: 'blue'
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
     });
 
+    // Scatter Chart (no aplica % pero se dejan puntos)
     new Chart(document.getElementById('chartScatter'), {
         type: 'scatter',
         data: {
-            datasets: [{ label: 'Puntos', data: cantidades.map((y, i) => ({ x: i, y: y })), backgroundColor: 'purple' }]
+            datasets: [{ 
+                label: 'Puntos', 
+                data: cantidades.map((y, i) => ({ x: i, y: y })), 
+                backgroundColor: 'purple' 
+            }]
         }
     });
 
+    // Exportar todas las gráficas
     document.getElementById('exportarImagen').addEventListener('click', function() {
         html2canvas(document.querySelector('.row')).then(canvas => {
             const link = document.createElement('a');
