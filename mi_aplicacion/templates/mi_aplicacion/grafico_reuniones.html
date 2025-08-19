@@ -4,12 +4,53 @@
 <div class="container mt-4">
     <h2 class="mb-4">📊 Estado de las Reuniones</h2>
 
-    <!-- Botón para exportar -->
+    <!-- Filtros -->
+    <form method="get" action="{% url 'mi_aplicacion:grafico_reuniones' %}" class="row g-3 mb-4">
+        <!-- <div class="col-md-3">
+            <label for="estado" class="form-label">Estado</label>
+            <select name="estado" id="estado" class="form-select">
+                <option value="">Todos</option>
+                <option value="en_proceso" {% if estado_seleccionado == "en_proceso" %}selected{% endif %}>En_proceso</option>
+                <option value="cerrada" {% if estado_seleccionado == "cerrada" %}selected{% endif %}>Cerrada</option>
+                <option value="Sin iniciar" {% if estado_seleccionado == "Sin iniciar" %}selected{% endif %}>Sin iniciar</option>
+            </select>
+        </div> -->
+
+        <div class="col-md-3">
+            <label for="proyecto" class="form-label">Proyecto</label>
+            <select name="proyecto" id="proyecto" class="form-select">
+                <option value="">Todos</option>
+                {% for p in proyectos %}
+                    <option value="{{ p.id }}" {% if proyecto_seleccionado == p.id|stringformat:"s" %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- <div class="col-md-3">
+            <label for="frente" class="form-label">Frente</label>
+            <select name="frente" id="frente" class="form-select">
+                <option value="">Todos</option>
+                {% for f in frentes %}
+                    <option value="{{ f.id }}" {% if frente_seleccionado == f.id|stringformat:"s" %}selected{% endif %}>
+                        {{ f.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div> -->
+
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100">🔍 Filtrar</button>
+        </div>
+    </form>
+
+    <!-- Botón exportar -->
     <div class="mb-3">
         <button class="btn btn-primary" id="exportarImagen">📥 Exportar todas las gráficas</button>
     </div>
 
-    <!-- Grilla de 2 columnas -->
+    <!-- Gráficas -->
     <div class="row g-4">
         <div class="col-md-6">
             <canvas id="chartPie" height="150"></canvas>
@@ -30,54 +71,43 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Datos desde Django
     const estados = {{ estados|safe }};
     const cantidades = {{ cantidades|safe }};
 
-    const colores = [
-        'rgba(255, 193, 7, 0.7)',  // amarillo
-        'rgba(220, 53, 69, 0.7)',  // rojo
-        'rgba(40, 167, 69, 0.7)'   // verde
-    ];
+    if (estados.length === 0) {
+        console.warn("⚠ No hay datos para mostrar");
+        return;
+    }
 
-    const bordes = [
-        'rgba(255, 193, 7, 1)',
-        'rgba(220, 53, 69, 1)',
-        'rgba(40, 167, 69, 1)'
-    ];
+    const colores = ['rgba(40,167,69,0.7)','rgba(255,193,7,0.7)','rgba(220,53,69,0.7)'];
+    const bordes  = ['rgba(40,167,69,1)','rgba(255,193,7,1)','rgba(220,53,69,1)'];
 
-    // Gráfico Pie
+    // const colores = ['rgba(255,193,7,0.7)','rgba(220,53,69,0.7)','rgba(40,167,69,0.7)'];
+    // const bordes  = ['rgba(255,193,7,1)','rgba(220,53,69,1)','rgba(40,167,69,1)'];
+
     new Chart(document.getElementById('chartPie'), {
         type: 'pie',
         data: { labels: estados, datasets: [{ data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }] }
     });
 
-    // Gráfico Barra
     new Chart(document.getElementById('chartBar'), {
         type: 'bar',
-        data: { labels: estados, datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }] },
+        data: { labels: estados, datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: colores }] },
         options: { responsive: true }
     });
 
-    // Gráfico Línea
     new Chart(document.getElementById('chartLine'), {
         type: 'line',
-        data: { labels: estados, datasets: [{ label: 'Evolución', data: cantidades, fill: false, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1 }] }
+        data: { labels: estados, datasets: [{ label: 'Evolución', data: cantidades, borderColor: 'blue', tension: 0.3 }] }
     });
 
-    // Gráfico Dispersión
     new Chart(document.getElementById('chartScatter'), {
         type: 'scatter',
         data: {
-            datasets: [{
-                label: 'Puntos',
-                data: cantidades.map((y, i) => ({ x: i, y: y })),
-                backgroundColor: 'rgba(153, 102, 255, 0.7)'
-            }]
+            datasets: [{ label: 'Puntos', data: cantidades.map((y, i) => ({ x: i, y: y })), backgroundColor: 'purple' }]
         }
     });
 
-    // Exportar todas las gráficas como una sola imagen
     document.getElementById('exportarImagen').addEventListener('click', function() {
         html2canvas(document.querySelector('.row')).then(canvas => {
             const link = document.createElement('a');

@@ -219,51 +219,35 @@ class GraficoReunionesView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Obtener parámetros GET
-        estado_filtro = self.request.GET.get('estado')
-        grupo_filtro = self.request.GET.get('grupo')
-        fecha_inicio = self.request.GET.get('fecha_inicio')
-        fecha_fin = self.request.GET.get('fecha_fin')
+        # Capturar filtros
+        estado = self.request.GET.get("estado")
+        proyecto = self.request.GET.get("proyecto")
+        frente = self.request.GET.get("frente")
 
         # Query base
-        queryset = Reunion.objects.all()
+        reuniones = Reunion.objects.all()
 
         # Aplicar filtros
-        if estado_filtro:
-            queryset = queryset.filter(estado=estado_filtro)
+        if estado:
+            reuniones = reuniones.filter(estado=estado)
+        if proyecto:
+            reuniones = reuniones.filter(proyecto_id=proyecto)
+        if frente:
+            reuniones = reuniones.filter(frente_id=frente)
 
-        if grupo_filtro:
-            queryset = queryset.filter(grupo=grupo_filtro)
+        # Agrupación por estado para los gráficos
+        datos = reuniones.values("estado").annotate(cantidad=Count("id")).order_by("estado")
+        estados = [d["estado"] for d in datos]
+        cantidades = [d["cantidad"] for d in datos]
 
-        if fecha_inicio:
-            fecha_inicio = parse_date(fecha_inicio)
-            if fecha_inicio:
-                queryset = queryset.filter(fecha__gte=fecha_inicio)
-
-        if fecha_fin:
-            fecha_fin = parse_date(fecha_fin)
-            if fecha_fin:
-                queryset = queryset.filter(fecha__lte=fecha_fin)
-
-        # Calcular conteos filtrados
-        conteos = (
-            queryset
-            .values('estado')
-            .annotate(total=Count('id'))
-        )
-
-        estados = [c['estado'] for c in conteos]
-        cantidades = [c['total'] for c in conteos]
-
-        # Pasar datos al template
-        context['estados'] = estados
-        context['cantidades'] = cantidades
-
-        # Para mantener los filtros en el formulario
-        context['estado_filtro'] = estado_filtro or ''
-        context['grupo_filtro'] = grupo_filtro or ''
-        context['fecha_inicio'] = self.request.GET.get('fecha_inicio', '')
-        context['fecha_fin'] = self.request.GET.get('fecha_fin', '')
+        # Enviar a la plantilla
+        context["estados"] = estados
+        context["cantidades"] = cantidades
+        context["proyectos"] = Proyecto.objects.all()
+        context["frentes"] = Frente.objects.all()
+        context["estado_seleccionado"] = estado
+        context["proyecto_seleccionado"] = proyecto
+        context["frente_seleccionado"] = frente
 
         return context
     
@@ -421,7 +405,6 @@ class ActaReunionPDFView(View):
         # Generar PDF
         doc.build(elementos, onFirstPage=header_footer, onLaterPages=header_footer)
         return response
-
 
 class DocumentosView(TemplateView):
     template_name = 'mi_aplicacion/documentos.html'
