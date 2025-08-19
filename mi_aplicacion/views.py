@@ -212,7 +212,6 @@ class ListaReunionesView(ListView):
 
         return context
 
-
 class GraficoReunionesView(TemplateView):
     template_name = "mi_aplicacion/grafico_reuniones.html"
 

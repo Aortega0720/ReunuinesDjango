@@ -1,5 +1,6 @@
 ﻿# tu_app/urls.py
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from .views import (
     ReunionListView, ReunionDetailView, ListaReunionesView,
     GraficoReunionesView, ExportarReunionesExcelView,
@@ -21,5 +22,10 @@ urlpatterns = [
     path('actas/', ActasPorProyectoView.as_view(), name='actas_por_proyecto'),
     path('', HomeView.as_view(), name='home'),
     path('proyecto/<int:pk>/exportar_pdf/', ExportarProyectoPDF.as_view(), name='exportar_proyecto_pdf'),
+    path(
+        "accounts/login/",
+        auth_views.LoginView.as_view(template_name="mi_aplicacion/login.html"),
+        name="login",
+    ),
 ]
 
