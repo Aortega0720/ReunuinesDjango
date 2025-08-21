@@ -3,13 +3,16 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/actas.css' %}">
-<!-- Botón Volver -->
-  <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
-    ← Volver
+
+<!-- Botón Volver y controles -->
+<div class="actas-header d-flex flex-wrap align-items-center gap-2 mb-3">
+  <a href="javascript:history.back()" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Volver
   </a>
-<form method="get" class="mb-3">
-    <label for="proyecto">Filtrar por proyecto:</label>
-    <select name="proyecto" id="proyecto" class="form-select" onchange="this.form.submit()">
+
+  <form method="get" class="d-flex gap-2 align-items-center ms-2" id="form-filtrar-proyecto">
+    <label for="proyecto" class="visually-hidden">Proyecto</label>
+    <select name="proyecto" id="proyecto" class="form-select form-select-sm" onchange="document.getElementById('form-filtrar-proyecto').submit()">
         <option value="">Todos</option>
         {% for proyecto in proyectos %}
             <option value="{{ proyecto.id }}" {% if proyecto.id|stringformat:"s" == proyecto_seleccionado %}selected{% endif %}>
@@ -17,46 +20,81 @@
             </option>
         {% endfor %}
     </select>
-</form>
-{% if proyecto_seleccionado %}
-  <a href="{% url 'mi_aplicacion:exportar_proyecto_pdf' proyecto_seleccionado %}" 
-     class="btn btn-success mb-3">
-      <i class="bi bi-filetype-pdf"></i> Exportar Proyecto en PDF
-  </a>
-{% endif %}
+  </form>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Reunión</th>
-            <th>Fecha</th>
-            <th>Proyecto</th>
-            <th>Facetas</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for reunion in reuniones %}
-        <tr>
-            <td>{{ reunion.titulo }}</td>
-            <td>{{ reunion.fecha }}</td>
-            <td>{{ reunion.proyecto.nombre }}</td>
-            <td>
+  {% if proyecto_seleccionado %}
+    <a href="{% url 'mi_aplicacion:exportar_proyecto_pdf' proyecto_seleccionado %}" 
+       class="btn btn-success ms-auto export-btn">
+        <i class="bi bi-filetype-pdf"></i> Exportar Proyecto en PDF
+    </a>
+  {% endif %}
+</div>
+
+<!-- Tabla / lista responsive -->
+<div class="table-responsive actas-table-wrapper">
+  <table class="table table-striped align-middle mb-0">
+      <thead class="table-dark d-none d-md-table-header-group"><!-- oculto en moviles -->
+          <tr>
+              <th>Reunión</th>
+              <th>Fecha</th>
+              <th>Proyecto</th>
+              <th>Facetas</th>
+              <th>Acciones</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for reunion in reuniones %}
+          <tr class="acta-row">
+              <td data-label="Reunión">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="acta-avatar bg-primary text-white rounded-circle d-inline-flex justify-content-center align-items-center">
+                      <i class="bi bi-journal-text"></i>
+                    </div>
+                    <div class="acta-title">
+                      <div class="fw-semibold">{{ reunion.titulo }}</div>
+                      {% if reunion.descripcion %}
+                        <div class="small text-muted d-none d-md-block">{{ reunion.descripcion|truncatechars:80 }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+              </td>
+
+              <td data-label="Fecha">
+                {{ reunion.fecha|date:"d/m/Y H:i" }}
+              </td>
+
+              <td data-label="Proyecto">
+                {% if reunion.proyecto %}{{ reunion.proyecto.nombre }}{% else %}-{% endif %}
+              </td>
+
+              <td data-label="Facetas">
                 {% if reunion.proyecto.facetas.all %}
                     {% for faceta in reunion.proyecto.facetas.all %}
-                        <span class="badge bg-primary">{{ faceta.nombre }}</span>
+                        <span class="badge bg-primary me-1 faceta-badge">{{ faceta.nombre }}</span>
                     {% empty %}
-                        <em>Sin facetas</em>
+                        <em class="small text-muted">Sin facetas</em>
                     {% endfor %}
+                {% else %}
+                    <em class="small text-muted">Sin facetas</em>
                 {% endif %}
-            </td>
-            <td>
-                <a href="{% url 'mi_aplicacion:acta_pdf' reunion.id %}" class="btn btn-sm btn-danger">
-                    <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+              </td>
+
+              <td data-label="Acciones" class="text-end">
+                <div class="d-flex gap-2 justify-content-end flex-wrap">
+                  <a href="{% url 'mi_aplicacion:acta_pdf' reunion.id %}" class="btn btn-sm btn-danger">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <span class="d-none d-md-inline"> Descargar PDF</span>
+                  </a>
+                </div>
+              </td>
+          </tr>
+          {% empty %}
+          <tr>
+              <td colspan="5" class="text-center text-muted py-4">No hay actas / reuniones para mostrar.</td>
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+</div>
+
 {% endblock %}

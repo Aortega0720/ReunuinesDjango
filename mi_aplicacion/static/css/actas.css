@@ -79,3 +79,134 @@ form.mb-3 select:hover {
     margin-right: 4px;
     margin-bottom: 4px;
 }
+
+/* actas.css - estilos responsivos y elegantes para la tabla de actas */
+
+/* --- Variables pequeñas --- */
+:root{
+  --primary: #0d6efd;
+  --muted: #6c757d;
+  --card-bg: #ffffff;
+  --surface: #f8f9fa;
+}
+
+/* Wrapper */
+.actas-header {
+  align-items: center;
+}
+
+/* Avatar pequeño en la primera columna */
+.acta-avatar {
+  width: 42px;
+  height: 42px;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 12px rgba(13,110,253,0.08);
+}
+
+/* Faceta badge */
+.faceta-badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.5em;
+}
+
+/* Table wrapper: make it scrollable on small widths */
+.actas-table-wrapper {
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+}
+
+/* Default table adjustments (desktop) */
+.table > tbody > tr > td {
+  vertical-align: middle;
+}
+
+/* Compact action buttons */
+.export-btn {
+  white-space: nowrap;
+}
+
+/* -----------------------
+   Responsive transform:
+   On small screens hide the header and show each row as a card
+   ----------------------*/
+@media (max-width: 767.98px) {
+  /* hide native table header */
+  .actas-table-wrapper thead {
+    display: none;
+  }
+
+  /* Make each row behave like a card */
+  .actas-table-wrapper tbody,
+  .actas-table-wrapper tr,
+  .actas-table-wrapper td {
+    display: block;
+    width: 100%;
+  }
+
+  .actas-table-wrapper tr {
+    margin-bottom: 12px;
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(16,24,40,0.04);
+    padding: 12px;
+    border: 1px solid rgba(0,0,0,0.03);
+  }
+
+  .actas-table-wrapper td {
+    padding: 6px 0;
+    border: none;
+    text-align: left;
+    position: relative;
+  }
+
+  /* label before each cell using the data-label attribute */
+  .actas-table-wrapper td::before {
+    content: attr(data-label);
+    display: inline-block;
+    width: 40%;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  /* Right align the actions cell and make the button block-level */
+  .actas-table-wrapper td[data-label="Acciones"] {
+    text-align: right;
+  }
+  .actas-table-wrapper td[data-label="Acciones"] .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Smaller avatar and spacing for mobile */
+  .acta-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
+  }
+
+  /* ensure badges wrap nicely */
+  .faceta-badge {
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+}
+
+/* Minor visual polish for all sizes */
+.actas-table-wrapper .small.text-muted {
+  color: #6c757d;
+  font-size: 0.825rem;
+}
+
+/* focus state for selects and buttons */
+#proyecto:focus, .export-btn:focus {
+  outline: none;
+  box-shadow: 0 6px 18px rgba(13,110,253,0.12);
+  transform: translateY(-1px);
+}
+
+/* Accessibility / high-contrast tweaks */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
