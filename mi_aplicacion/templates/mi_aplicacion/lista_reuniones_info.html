@@ -74,7 +74,7 @@
                 <th>ID</th>
                 <th>Título</th>
                 <th>Proyecto</th>
-                <th>Frente</th>
+                <!-- <th>Frente</th> -->
                 <th>Grupo</th>
                 <th>Fecha</th>
                 <th>Estado</th>
@@ -106,9 +106,9 @@
                   {% if reunion.proyecto %}{{ reunion.proyecto.nombre }}{% else %}-{% endif %}
                 </td>
 
-                <td data-label="Frente">
+                <!-- <td data-label="Frente">
                   {% if reunion.frente %}{{ reunion.frente.nombre }}{% else %}-{% endif %}
-                </td>
+                </td> -->
 
                 <td data-label="Grupo">{{ reunion.grupo_trabajo.nombre }}</td>
 
