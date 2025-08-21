@@ -78,8 +78,8 @@
                 <th>Grupo</th>
                 <th>Fecha</th>
                 <th>Estado</th>
-                <th>Etiquetas</th>
-                <th>Descripción</th>
+                <!-- <th>Etiquetas</th> -->
+                <!-- <th>Descripción</th> -->
                 <th>Vencimiento Proyecto</th>
                 <th>Días Restantes</th>
                 <th>Detalles</th>
@@ -124,7 +124,7 @@
                     {% endif %}
                 </td>
 
-                <td data-label="Etiquetas">
+                <!-- <td data-label="Etiquetas">
                     {% if reunion.etiquetas.all %}
                         {% for etiqueta in reunion.etiquetas.all %}
                             <span class="badge bg-info text-dark small me-1">{{ etiqueta.nombre }}</span>
@@ -132,11 +132,11 @@
                     {% else %}
                         <span class="text-muted small">Sin etiquetas</span>
                     {% endif %}
-                </td>
+                </td> -->
 
-                <td data-label="Descripción" class="text-truncate" style="max-width:200px;">
+                <!-- <td data-label="Descripción" class="text-truncate" style="max-width:200px;">
                   {{ reunion.descripcion|default:"-" }}
-                </td>
+                </td> -->
 
                 <td data-label="Vencimiento Proyecto">
                     {% if reunion.vencido == True %}

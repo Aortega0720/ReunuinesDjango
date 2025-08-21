@@ -1,30 +1,35 @@
-﻿# tu_app/views.py
-from django.views.generic import ListView, DetailView, TemplateView
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, ListFlowable, ListItem, PageBreak
-from .models import Reunion, Intervencion, Comentario, Proyecto,Frente
-from django.shortcuts import redirect, render
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import IntervencionForm, ComentarioForm, IntervencionDocumentoForm
-from django.db.models import Count,Prefetch
-from django.utils.dateparse import parse_date
-from django.http import JsonResponse, HttpResponse, Http404
-import openpyxl
-from django.views import View
-
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
-
+﻿# stdlib
+import os
+from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import attrgetter
 
-from reportlab.lib.units import inch, cm
-from reportlab.pdfgen import canvas
+# Django
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.staticfiles import finders
-from datetime import datetime, date, timedelta
-from reportlab.lib.enums import TA_JUSTIFY
+from django.db.models import Count, Prefetch
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
 from django.utils import timezone
-import os
+from django.utils.dateparse import parse_date
+from django.views import View
+from django.views.generic import DetailView, ListView, TemplateView
+
+# terceros
+import openpyxl
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm, inch
+from reportlab.pdfgen import canvas
+from reportlab.platypus import (Image, ListFlowable, ListItem, PageBreak,
+                                Paragraph, SimpleDocTemplate, Spacer, Table,
+                                TableStyle)
+
+# local (app)
+from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm
+from .models import Comentario, Frente, Intervencion, Proyecto, Reunion
 
 
 class ReunionListView(ListView):
