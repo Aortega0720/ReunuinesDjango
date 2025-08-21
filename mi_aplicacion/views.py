@@ -23,6 +23,7 @@ from reportlab.pdfgen import canvas
 from django.contrib.staticfiles import finders
 from datetime import datetime, date, timedelta
 from reportlab.lib.enums import TA_JUSTIFY
+from django.utils import timezone
 import os
 
 
@@ -212,43 +213,43 @@ class ListaReunionesView(ListView):
 
         return context
 
-class GraficoReunionesView(TemplateView):
-    template_name = "mi_aplicacion/grafico_reuniones.html"
+# class GraficoReunionesView(TemplateView):
+#     template_name = "mi_aplicacion/grafico_reuniones.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
 
-        # Capturar filtros
-        estado = self.request.GET.get("estado")
-        proyecto = self.request.GET.get("proyecto")
-        frente = self.request.GET.get("frente")
+#         # Capturar filtros
+#         estado = self.request.GET.get("estado")
+#         proyecto = self.request.GET.get("proyecto")
+#         frente = self.request.GET.get("frente")
 
-        # Query base
-        reuniones = Reunion.objects.all()
+#         # Query base
+#         reuniones = Reunion.objects.all()
 
-        # Aplicar filtros
-        if estado:
-            reuniones = reuniones.filter(estado=estado)
-        if proyecto:
-            reuniones = reuniones.filter(proyecto_id=proyecto)
-        if frente:
-            reuniones = reuniones.filter(frente_id=frente)
+#         # Aplicar filtros
+#         if estado:
+#             reuniones = reuniones.filter(estado=estado)
+#         if proyecto:
+#             reuniones = reuniones.filter(proyecto_id=proyecto)
+#         if frente:
+#             reuniones = reuniones.filter(frente_id=frente)
 
-        # Agrupación por estado para los gráficos
-        datos = reuniones.values("estado").annotate(cantidad=Count("id")).order_by("estado")
-        estados = [d["estado"] for d in datos]
-        cantidades = [d["cantidad"] for d in datos]
+#         # Agrupación por estado para los gráficos
+#         datos = reuniones.values("estado").annotate(cantidad=Count("id")).order_by("estado")
+#         estados = [d["estado"] for d in datos]
+#         cantidades = [d["cantidad"] for d in datos]
 
-        # Enviar a la plantilla
-        context["estados"] = estados
-        context["cantidades"] = cantidades
-        context["proyectos"] = Proyecto.objects.all()
-        context["frentes"] = Frente.objects.all()
-        context["estado_seleccionado"] = estado
-        context["proyecto_seleccionado"] = proyecto
-        context["frente_seleccionado"] = frente
+#         # Enviar a la plantilla
+#         context["estados"] = estados
+#         context["cantidades"] = cantidades
+#         context["proyectos"] = Proyecto.objects.all()
+#         context["frentes"] = Frente.objects.all()
+#         context["estado_seleccionado"] = estado
+#         context["proyecto_seleccionado"] = proyecto
+#         context["frente_seleccionado"] = frente
 
-        return context
+#         return context
     
 class ExportarReunionesExcelView(View):
     def get(self, request, *args, **kwargs):
@@ -545,3 +546,70 @@ class ExportarProyectoPDF(View):
         doc.build(elementos, onFirstPage=header_footer, onLaterPages=header_footer)
 
         return response
+    
+class GraficoReunionesView(TemplateView):
+    template_name = "mi_aplicacion/grafico_reuniones.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Capturar filtros
+        estado = self.request.GET.get("estado")
+        proyecto = self.request.GET.get("proyecto")
+        frente = self.request.GET.get("frente")
+
+        # Query base (aplicar filtros si vienen)
+        reuniones = Reunion.objects.all()
+
+        if estado:
+            reuniones = reuniones.filter(estado=estado)
+        if proyecto:
+            reuniones = reuniones.filter(proyecto_id=proyecto)
+        if frente:
+            reuniones = reuniones.filter(frente_id=frente)
+
+        # Datos por estado (para los gráficos que ya tenías)
+        datos_estado = reuniones.values("estado").annotate(cantidad=Count("id")).order_by("estado")
+        estados = [d["estado"] for d in datos_estado]
+        cantidades = [d["cantidad"] for d in datos_estado]
+
+        # --- Nuevo: calcular vencidas / activas / sin fecha (para el proyecto o filtros aplicados) ---
+        today = timezone.localdate()
+        vencidas = 0
+        activas = 0
+        sin_fecha = 0
+
+        # Recorremos reuniones filtradas y clasificamos según fecha_finalizacion
+        for r in reuniones:
+            if r.fecha_finalizacion:
+                # `fecha_finalizacion` es DateTimeField; comparamos por fecha (date)
+                try:
+                    final_date = r.fecha_finalizacion.date()
+                except Exception:
+                    # por si fuera ya date
+                    final_date = r.fecha_finalizacion
+                if final_date < today:
+                    vencidas += 1
+                else:
+                    activas += 1
+            else:
+                sin_fecha += 1
+
+        vencido_labels = ["Activas", "Vencidas", "Sin fecha"]
+        vencido_counts = [activas, vencidas, sin_fecha]
+
+        # Pasar datos al template
+        context["estados"] = estados
+        context["cantidades"] = cantidades
+
+        context["vencido_labels"] = vencido_labels
+        context["vencido_counts"] = vencido_counts
+
+        # Para los selects del formulario
+        context["proyectos"] = Proyecto.objects.order_by("nombre")
+        context["frentes"] = Frente.objects.order_by("nombre")
+        context["estado_seleccionado"] = estado or ""
+        context["proyecto_seleccionado"] = proyecto or ""
+        context["frente_seleccionado"] = frente or ""
+
+        return context

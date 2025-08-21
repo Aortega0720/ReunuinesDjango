@@ -6,7 +6,7 @@
 
     <!-- Filtros -->
     <form method="get" action="{% url 'mi_aplicacion:grafico_reuniones' %}" class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label for="proyecto" class="form-label">Proyecto</label>
             <select name="proyecto" id="proyecto" class="form-select">
                 <option value="">Todos</option>
@@ -17,6 +17,19 @@
                 {% endfor %}
             </select>
         </div>
+
+        <!-- <div class="col-md-4">
+            <label for="frente" class="form-label">Frente</label>
+            <select name="frente" id="frente" class="form-select">
+                <option value="">Todos</option>
+                {% for f in frentes %}
+                    <option value="{{ f.id }}" {% if frente_seleccionado == f.id|stringformat:"s" %}selected{% endif %}>
+                        {{ f.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div> -->
+
         <div class="col-md-3 d-flex align-items-end">
             <button type="submit" class="btn btn-success w-100">🔍 Filtrar</button>
         </div>
@@ -30,118 +43,146 @@
     <!-- Gráficas -->
     <div class="row g-4">
         <div class="col-md-6">
-            <canvas id="chartPie" height="150"></canvas>
+            <div class="card shadow-sm p-3">
+                <h6 class="mb-3">Distribución por estado</h6>
+                <canvas id="chartPie" height="180"></canvas>
+            </div>
         </div>
+
         <div class="col-md-6">
-            <canvas id="chartBar" height="150"></canvas>
+            <div class="card shadow-sm p-3">
+                <h6 class="mb-3">Vencimiento (activas / vencidas / sin fecha)</h6>
+                <canvas id="chartVencimiento" height="180"></canvas>
+            </div>
         </div>
+
         <div class="col-md-6">
-            <canvas id="chartLine" height="150"></canvas>
+            <div class="card shadow-sm p-3">
+                <h6 class="mb-3">Conteo por estado (barra)</h6>
+                <canvas id="chartBar" height="160"></canvas>
+            </div>
         </div>
+
         <div class="col-md-6">
-            <canvas id="chartScatter" height="150"></canvas>
+            <div class="card shadow-sm p-3">
+                <h6 class="mb-3">Evolución / Línea</h6>
+                <canvas id="chartLine" height="160"></canvas>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Chart.js + plugin datalabels -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const estados = {{ estados|safe }};
-    const cantidades = {{ cantidades|safe }};
+    // Datos enviados desde el contexto
+    const estados = {{ estados|default:"[]"|safe }};
+    const cantidades = {{ cantidades|default:"[]"|safe }};
 
-    if (estados.length === 0) {
-        console.warn("⚠ No hay datos para mostrar");
-        return;
-    }
+    const vencidoLabels = {{ vencido_labels|default:"[]"|safe }};
+    const vencidoCounts = {{ vencido_counts|default:"[]"|safe }};
 
-    const total = cantidades.reduce((a, b) => a + b, 0);
+    // Si no hay datos para chartPie, evitamos errores
+    const totalEstados = cantidades.reduce((a,b)=>a+b,0);
+    const totalVenc = vencidoCounts.reduce((a,b)=>a+b,0);
 
-    const colores = ['rgba(40,167,69,0.7)','rgba(255,193,7,0.7)','rgba(220,53,69,0.7)'];
+    const colores = ['rgba(40,167,69,0.8)','rgba(255,193,7,0.85)','rgba(220,53,69,0.85)'];
     const bordes  = ['rgba(40,167,69,1)','rgba(255,193,7,1)','rgba(220,53,69,1)'];
 
-    // Pie Chart
-    new Chart(document.getElementById('chartPie'), {
-        type: 'pie',
-        data: { 
-            labels: estados, 
-            datasets: [{ data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }] 
-        },
-        options: {
+    // Helper: crear opciones comunes para datalabels (porcentaje)
+    function datalabelsPctOptions(total, txtColor='#fff'){
+        return {
             plugins: {
                 datalabels: {
-                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
-                    color: '#fff',
-                    font: { weight: 'bold' }
+                    formatter: (value) => {
+                        if (!total || total === 0) return '0%';
+                        return ((value / total) * 100).toFixed(1) + '%';
+                    },
+                    color: txtColor,
+                    font: { weight: '600' }
                 }
             }
-        },
-        plugins: [ChartDataLabels]
-    });
+        };
+    }
 
-    // Bar Chart
-    new Chart(document.getElementById('chartBar'), {
-        type: 'bar',
-        data: { 
-            labels: estados, 
-            datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: colores }] 
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
-                    color: '#000'
+    // PIE: por estado
+    if (estados.length && cantidades.length) {
+        new Chart(document.getElementById('chartPie'), {
+            type: 'pie',
+            data: {
+                labels: estados,
+                datasets: [{ data: cantidades, backgroundColor: colores, borderColor: bordes, borderWidth: 1 }]
+            },
+            options: Object.assign({
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
                 }
-            }
-        },
-        plugins: [ChartDataLabels]
-    });
+            }, datalabelsPctOptions(totalEstados, '#fff')),
+            plugins: [ChartDataLabels]
+        });
+    }
 
-    // Line Chart
-    new Chart(document.getElementById('chartLine'), {
-        type: 'line',
-        data: { 
-            labels: estados, 
-            datasets: [{ label: 'Evolución', data: cantidades, borderColor: 'blue', tension: 0.3 }] 
-        },
-        options: {
-            plugins: {
-                datalabels: {
-                    align: 'top',
-                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
-                    color: 'blue'
+    // VENCIMIENTO: activas / vencidas / sin fecha (pie)
+    if (vencidoLabels.length && vencidoCounts.length) {
+        new Chart(document.getElementById('chartVencimiento'), {
+            type: 'pie',
+            data: {
+                labels: vencidoLabels,
+                datasets: [{
+                    data: vencidoCounts,
+                    backgroundColor: ['rgba(40,167,69,0.8)','rgba(220,53,69,0.85)','rgba(108,117,125,0.6)'],
+                    borderColor: ['rgba(40,167,69,1)','rgba(220,53,69,1)','rgba(108,117,125,1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: Object.assign({
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
                 }
-            }
-        },
-        plugins: [ChartDataLabels]
-    });
+            }, datalabelsPctOptions(totalVenc, '#fff')),
+            plugins: [ChartDataLabels]
+        });
+    }
 
-    // Scatter Chart (no aplica % pero se dejan puntos)
-    new Chart(document.getElementById('chartScatter'), {
-        type: 'scatter',
-        data: {
-            datasets: [{ 
-                label: 'Puntos', 
-                data: cantidades.map((y, i) => ({ x: i, y: y })), 
-                backgroundColor: 'purple' 
-            }]
-        }
-    });
+    // BAR chart por estado (con % encima)
+    if (estados.length && cantidades.length) {
+        new Chart(document.getElementById('chartBar'), {
+            type: 'bar',
+            data: { labels: estados, datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: colores }] },
+            options: Object.assign({
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, precision:0 } }
+            }, datalabelsPctOptions(totalEstados, '#000')),
+            plugins: [ChartDataLabels]
+        });
+    }
 
-    // Exportar todas las gráficas
+    // LINE chart por estado (simple)
+    if (estados.length && cantidades.length) {
+        new Chart(document.getElementById('chartLine'), {
+            type: 'line',
+            data: { labels: estados, datasets: [{ label: 'Evolución', data: cantidades, borderColor: 'rgba(13,110,253,0.9)', tension: 0.25, fill: false }] },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    }
+
+    // Exportar todas las gráficas como imagen
     document.getElementById('exportarImagen').addEventListener('click', function() {
-        html2canvas(document.querySelector('.row')).then(canvas => {
+        // tomamos el contenedor con todas las gráficas
+        const contenedor = document.querySelector('.row.g-4') || document.body;
+        html2canvas(contenedor).then(canvas => {
             const link = document.createElement('a');
             link.download = 'graficas_reuniones.png';
             link.href = canvas.toDataURL();
             link.click();
-        });
+        }).catch(err => console.error(err));
     });
 });
 </script>
