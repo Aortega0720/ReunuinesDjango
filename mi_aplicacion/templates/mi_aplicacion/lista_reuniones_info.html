@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Lista de Actividades{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/responsive-tables.css' %}">
+
 <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
   <i class="bi bi-arrow-left"></i> Volver
 </a>
@@ -10,159 +13,196 @@
 <div class="container my-4">
     <h1 class="mb-4">📋 Informe de Actividades</h1>
 
-   <!-- Formulario de filtro -->
-<form method="get" class="mb-3 row g-2">
+    <!-- Formulario de filtro -->
+    <form method="get" class="mb-3 row g-2">
+        <!-- Filtro estado -->
+        <div class="col-auto">
+            <select id="estado-select" name="estado" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los estados</option>
+                {% for estado in estados_disponibles %}
+                    <option value="{{ estado }}" {% if estado == estado_actual %}selected{% endif %}>
+                        {{ estado|title }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <!-- Filtro estado -->
-    <div class="col-auto">
-        <select name="estado" class="form-select" onchange="this.form.submit()">
-            <option value="">Todos los estados</option>
-            {% for estado in estados_disponibles %}
-                <option value="{{ estado }}" {% if estado == estado_actual %}selected{% endif %}>
-                    {{ estado|title }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
+        <!-- Filtro proyecto -->
+        <div class="col-auto">
+            <select id="proyecto-select" name="proyecto" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los proyectos</option>
+                {% for proyecto in proyectos_disponibles %}
+                    <option value="{{ proyecto.id }}" {% if proyecto.id|stringformat:"s" == proyecto_actual %}selected{% endif %}>
+                        {{ proyecto.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <!-- Filtro proyecto -->
-    <div class="col-auto">
-        <select name="proyecto" class="form-select" onchange="this.form.submit()">
-            <option value="">Todos los proyectos</option>
-            {% for proyecto in proyectos_disponibles %}
-                <option value="{{ proyecto.id }}" {% if proyecto.id|stringformat:"s" == proyecto_actual %}selected{% endif %}>
-                    {{ proyecto.nombre }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
+        <!-- Filtro frente -->
+        <div class="col-auto">
+            <select id="frente-select" name="frente" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los frentes</option>
+                {% for frente in frentes_disponibles %}
+                    <option value="{{ frente.id }}" {% if frente.id|stringformat:"s" == frente_actual %}selected{% endif %}>
+                        {{ frente.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <!-- Filtro frente -->
-    <div class="col-auto">
-        <select name="frente" class="form-select" onchange="this.form.submit()">
-            <option value="">Todos los frentes</option>
-            {% for frente in frentes_disponibles %}
-                <option value="{{ frente.id }}" {% if frente.id|stringformat:"s" == frente_actual %}selected{% endif %}>
-                    {{ frente.nombre }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
+        <!-- Botón Restablecer -->
+        <div class="col-auto">
+            <a href="{% url 'mi_aplicacion:lista_reuniones_info' %}" class="btn btn-secondary">Restablecer</a>
+        </div>
 
-    <!-- Botón Restablecer -->
-    <div class="col-auto">
-        <a href="{% url 'mi_aplicacion:lista_reuniones_info' %}" class="btn btn-secondary">Restablecer</a>
-    </div>
+        <!-- Exportar a Excel -->
+        <div class="col-auto">
+            <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}&proyecto={{ proyecto_actual }}&frente={{ frente_actual }}"
+               class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+            </a>
+        </div>
+    </form>
 
-    <!-- Exportar a Excel -->
-    <div class="col-auto">
-        <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}&proyecto={{ proyecto_actual }}&frente={{ frente_actual }}" 
-           class="btn btn-success">
-            <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-        </a>
-    </div>
-</form>
+    <!-- Tabla responsiva -->
+    <div class="table-wrapper">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle shadow-sm mb-0">
+           <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Proyecto</th>
+                <th>Frente</th>
+                <th>Grupo</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Etiquetas</th>
+                <th>Descripción</th>
+                <th>Vencimiento Proyecto</th>
+                <th>Días Restantes</th>
+                <th>Detalles</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for reunion in reuniones %}
+            <tr>
+                <td data-label="ID">{{ reunion.id }}</td>
 
+                <td data-label="Título">
+                  <div class="d-flex align-items-start">
+                    <div class="me-2 icon-avatar rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center">
+                      <i class="bi bi-journal-text"></i>
+                    </div>
+                    <div>
+                      <div class="fw-semibold text-truncate" style="max-width:240px;">{{ reunion.titulo }}</div>
+                      <div class="small text-muted">{{ reunion.descripcion|truncatechars:80 }}</div>
+                    </div>
+                  </div>
+                </td>
 
-    <!-- Tabla -->
-    <table class="table table-hover table-striped align-middle shadow-sm">
-       <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Título</th>
-            <th>Proyecto</th>
-            <th>Frente</th>
-            <th>Grupo</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Etiquetas</th>
-            <th>Descripción</th>
-            <th>Vencimiento Proyecto</th>
-            <th>Días Restantes</th>
-            <th>Detalles</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for reunion in reuniones %}
-        <tr>
-            <td>{{ reunion.id }}</td>
-            <td>{{ reunion.titulo }}</td>
-            <td>{{ reunion.proyecto.nombre }}</td>
-            <td>{{ reunion.frente.nombre }}</td>
-            <td>{{ reunion.grupo_trabajo.nombre }}</td>
-            <td>{{ reunion.fecha|date:"d/m/Y" }}</td>
-            <td>
-                {% if reunion.estado == "cerrada" %}
-                    <span class="badge bg-success">Cerrada</span>
-                {% elif reunion.estado == "en_proceso" %}
-                    <span class="badge bg-warning text-dark">En proceso</span>
-                {% else %}
-                    <span class="badge bg-danger">Sin iniciar</span>
-                {% endif %}
-            </td>
-            <td>
-                {% if reunion.etiquetas.all %}
-                    {% for etiqueta in reunion.etiquetas.all %}
-                        <span class="badge bg-info text-dark">{{ etiqueta.nombre }}</span>
-                    {% endfor %}
-                {% else %}
-                    <span class="text-muted">Sin etiquetas</span>
-                {% endif %}
-            </td>
-            <td>{{ reunion.descripcion }}</td>
+                <td data-label="Proyecto">
+                  {% if reunion.proyecto %}{{ reunion.proyecto.nombre }}{% else %}-{% endif %}
+                </td>
 
-            <!-- Vencido o no -->
-            <td>
-                {% if reunion.vencido == True %}
-                    <span class="badge bg-danger">Vencido</span>
-                {% elif reunion.vencido == False %}
-                    <span class="badge bg-success">Activo</span>
-                {% else %}
-                    <span class="text-muted">Sin fecha</span>
-                {% endif %}
-            </td>
+                <td data-label="Frente">
+                  {% if reunion.frente %}{{ reunion.frente.nombre }}{% else %}-{% endif %}
+                </td>
 
-            <!-- Días restantes -->
-            <td>
-                {% if reunion.dias_restantes is not None %}
-                    {% if reunion.vencido %}
-                        <span class="text-danger">{{ reunion.dias_restantes }} días vencido</span>
-                    {% elif reunion.dias_restantes == 0 %}
-                        <span class="text-warning">Vence hoy</span>
+                <td data-label="Grupo">{{ reunion.grupo_trabajo.nombre }}</td>
+
+                <td data-label="Fecha">{{ reunion.fecha|date:"d/m/Y" }}</td>
+
+                <td data-label="Estado">
+                    {% if reunion.estado == "cerrada" %}
+                        <span class="badge bg-success">Cerrada</span>
+                    {% elif reunion.estado == "en_proceso" %}
+                        <span class="badge bg-warning text-dark">En proceso</span>
                     {% else %}
-                        <span class="text-success">Faltan {{ reunion.dias_restantes }} días</span>
+                        <span class="badge bg-danger">Sin iniciar</span>
                     {% endif %}
-                {% else %}
-                    <span class="text-muted">N/A</span>
-                {% endif %}
-            </td>
+                </td>
 
-            <td>
-                <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
-                    Ver detalles
-                </a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="12" class="text-center text-muted">No hay actividades registradas.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    </table>
+                <td data-label="Etiquetas">
+                    {% if reunion.etiquetas.all %}
+                        {% for etiqueta in reunion.etiquetas.all %}
+                            <span class="badge bg-info text-dark small me-1">{{ etiqueta.nombre }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted small">Sin etiquetas</span>
+                    {% endif %}
+                </td>
+
+                <td data-label="Descripción" class="text-truncate" style="max-width:200px;">
+                  {{ reunion.descripcion|default:"-" }}
+                </td>
+
+                <td data-label="Vencimiento Proyecto">
+                    {% if reunion.vencido == True %}
+                        <span class="badge bg-danger">Vencido</span>
+                    {% elif reunion.vencido == False %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="text-muted">Sin fecha</span>
+                    {% endif %}
+                </td>
+
+                <td data-label="Días Restantes">
+                    {% if reunion.dias_restantes is not None %}
+                        {% if reunion.vencido %}
+                            {# Se asume que desde la vista 'dias_restantes' ya llegó como número no negativo #}
+                            <span class="text-danger">{{ reunion.dias_restantes }} días vencido</span>
+                        {% elif reunion.dias_restantes == 0 %}
+                            <span class="text-warning">Vence hoy</span>
+                        {% else %}
+                            <span class="text-success">Faltan {{ reunion.dias_restantes }} días</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
+                </td>
+
+                <td data-label="Detalles">
+                    <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-primary btn-sm">
+                        Ver detalles
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="12" class="text-center text-muted">No hay actividades registradas.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
 </div>
 
 <script>
-document.getElementById('proyecto-select').addEventListener('change', function() {
-    const proyectoId = this.value;
+  // seguridad: sólo ejecutar si los selects existen
+  (function(){
+    const proyectoSelect = document.getElementById('proyecto-select');
     const frenteSelect = document.getElementById('frente-select');
-    for (let option of frenteSelect.options) {
-        if (option.value === '') {
-            option.hidden = false;
-            continue;
+    if (!proyectoSelect || !frenteSelect) return;
+
+    proyectoSelect.addEventListener('change', function() {
+        const proyectoId = this.value;
+        for (let option of frenteSelect.options) {
+            if (option.value === '') {
+                option.hidden = false;
+                continue;
+            }
+            // si no existe data-proyecto en <option> (no lo tenemos), se mantiene visible
+            const optProyecto = option.getAttribute('data-proyecto');
+            if (!optProyecto) {
+                option.hidden = false;
+                continue;
+            }
+            option.hidden = proyectoId && optProyecto !== proyectoId;
         }
-        option.hidden = proyectoId && option.getAttribute('data-proyecto') !== proyectoId;
-    }
-});
+    });
+  })();
 </script>
 {% endblock %}
