@@ -9,7 +9,7 @@ from .views import (
     DocumentosView, ActasPorProyectoView,HomeView,ExportarProyectoPDF, ProyectoListView,
     ProyectoDetailView, ProyectoCreateView, ProyectoUpdateView, ProyectoDeleteView
 )
-from mozilla_django_oidc import views as oidc_views
+# from mozilla_django_oidc import views as oidc_views
 
 app_name = 'mi_aplicacion'
 
@@ -30,12 +30,12 @@ urlpatterns = [
         auth_views.LoginView.as_view(template_name="mi_aplicacion/login.html"),
         name="login",
     ),
-    path('oidc/authenticate/', oidc_views.OIDCAuthenticationRequestView.as_view(), name='oidc_authentication_init'),
-    path('oidc/callback/', oidc_views.OIDCAuthenticationCallbackView.as_view(), name='oidc_authentication_callback'),
-    path('oidc/logout/', oidc_views.OIDCLogoutView.as_view(), name='oidc_logout'),
+    # path('oidc/authenticate/', oidc_views.OIDCAuthenticationRequestView.as_view(), name='oidc_authentication_init'),
+    # path('oidc/callback/', oidc_views.OIDCAuthenticationCallbackView.as_view(), name='oidc_authentication_callback'),
+    # path('oidc/logout/', oidc_views.OIDCLogoutView.as_view(), name='oidc_logout'),
 
     path('proyectos/', ProyectoListView.as_view(), name='proyecto_list'),
-     path('proyectos/<int:pk>/', ProyectoDetailView.as_view(), name='proyecto_detail'),
+    path('proyectos/<int:pk>/', ProyectoDetailView.as_view(), name='proyecto_detail'),
     path('proyectos/nuevo/', ProyectoCreateView.as_view(), name='proyecto_create'),
     path('proyectos/<int:pk>/editar/', ProyectoUpdateView.as_view(), name='proyecto_update'),
     path('proyectos/<int:pk>/eliminar/', ProyectoDeleteView.as_view(), name='proyecto_delete'),
