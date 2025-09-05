@@ -3,9 +3,9 @@
 
 {% block content %}
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3">📋 Lista de Proyectos</h1>
-    <a href="{% url 'mi_aplicacion:proyecto_create' %}" class="btn btn-primary">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold text-primary">📊 Lista de Proyectos</h1>
+    <a href="{% url 'mi_aplicacion:proyecto_create' %}" class="btn btn-success shadow-sm">
       ➕ Nuevo Proyecto
     </a>
   </div>
@@ -14,39 +14,60 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
       {% for proyecto in proyectos %}
         <div class="col">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
-              <h5 class="card-title">
-                <a href="{% url 'mi_aplicacion:proyecto_detail' proyecto.pk %}" class="text-decoration-none">
+          <div class="card border-0 shadow-sm h-100 rounded-3">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title mb-1">
+                <a href="{% url 'mi_aplicacion:proyecto_detail' proyecto.pk %}" class="text-decoration-none text-dark fw-bold">
                   {{ proyecto.nombre }}
                 </a>
               </h5>
-              <p class="card-text text-muted mb-2">
-                {{ proyecto.fecha_inicio|default:"?" }} → {{ proyecto.fecha_fin|default:"?" }}
+              <p class="text-muted small">
+                📅 {{ proyecto.fecha_inicio|default:"?" }} → {{ proyecto.fecha_fin|default:"?" }}
               </p>
 
-              <!-- Indicadores -->
-              <ul class="list-group list-group-flush small">
-                <li class="list-group-item">
-                  <strong>Avance:</strong> {{ proyecto.avance }} %
-                </li>
-                <li class="list-group-item">
-                  <strong>Intervenciones Totales:</strong> {{ proyecto.intervencion_total }}
-                </li>
-                <li class="list-group-item">
-                  <strong>Intervenciones RMBC:</strong> {{ proyecto.intervencion_rmbc }}
-                </li>
-                <li class="list-group-item">
-                  <strong>Ejecución Proyecto:</strong> {{ proyecto.ejecucion_proyecto }} %
-                </li>
-                <li class="list-group-item">
-                  <strong>Ejecución Financiera:</strong> $ {{ proyecto.ejecucion_financiera }} M
-                </li>
-              </ul>
+              <p class="card-text">{{ proyecto.descripcion|truncatewords:20 }}</p>
+
+              <!-- Avance con barra de progreso -->
+              <div class="mb-2">
+                <strong>Avance:</strong>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar bg-info" role="progressbar"
+                       style="width: {{ proyecto.avance }}%;" 
+                       aria-valuenow="{{ proyecto.avance }}" aria-valuemin="0" aria-valuemax="100">
+                  </div>
+                </div>
+                <small class="text-muted">{{ proyecto.avance }} %</small>
+              </div>
+
+              <!-- Ejecución con barra -->
+              <div class="mb-2">
+                <strong>Ejecución Proyecto:</strong>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar bg-success" role="progressbar"
+                       style="width: {{ proyecto.ejecucion_proyecto }}%;" 
+                       aria-valuenow="{{ proyecto.ejecucion_proyecto }}" aria-valuemin="0" aria-valuemax="100">
+                  </div>
+                </div>
+                <small class="text-muted">{{ proyecto.ejecucion_proyecto }} %</small>
+              </div>
+
+              <!-- Ejecución Financiera -->
+              <div class="mb-2">
+                <strong>Ejecución Financiera:</strong> 
+                <span class="badge bg-warning text-dark">
+                  $ {{ proyecto.ejecucion_financiera|default:"0" }} M
+                </span>
+              </div>
+
+              <!-- Totales -->
+              <div class="d-flex justify-content-between mt-auto pt-3">
+                <span class="badge bg-primary">Totales: {{ proyecto.intervencion_total }}</span>
+                <span class="badge bg-secondary">RMBC: {{ proyecto.intervencion_rmbc }}</span>
+              </div>
             </div>
-            <div class="card-footer text-end">
-              <a href="{% url 'mi_aplicacion:proyecto_detail' proyecto.pk %}" class="btn btn-sm btn-outline-secondary">
-                Ver detalle
+            <div class="card-footer bg-light text-end border-0">
+              <a href="{% url 'mi_aplicacion:proyecto_detail' proyecto.pk %}" class="btn btn-sm btn-outline-primary">
+                🔎 Ver detalle
               </a>
             </div>
           </div>
@@ -54,7 +75,9 @@
       {% endfor %}
     </div>
   {% else %}
-    <div class="alert alert-info">No hay proyectos registrados.</div>
+    <div class="alert alert-info text-center shadow-sm">
+      🚧 No hay proyectos registrados.
+    </div>
   {% endif %}
 </div>
 {% endblock %}
