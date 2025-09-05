@@ -34,21 +34,16 @@ class Proyecto(models.Model):
         return self.nombre
 
 class Frente(models.Model):
-    proyecto = models.ForeignKey(
-        Proyecto,
-        on_delete=models.CASCADE,
-        related_name='frentes'
-    )
-    nombre = models.CharField(max_length=150)
+    nombre = models.CharField(max_length=150, unique=True)
     slug = models.SlugField(max_length=160, blank=True, null=True)
     descripcion = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ('proyecto', 'nombre')
-        ordering = ('proyecto', 'nombre')
+        ordering = ('nombre',)
 
     def __str__(self):
-        return f"{self.proyecto.nombre} — {self.nombre}"
+        return self.nombre
+
 
 class Reunion(models.Model):
     ESTADOS = [
@@ -75,7 +70,7 @@ class Reunion(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
 
-    fecha = models.DateTimeField(auto_now_add=True)   
+    fecha = models.DateTimeField(null=True, blank=True)   
     fecha_finalizacion = models.DateTimeField(null=True, blank=True) 
 
     estado = models.CharField(max_length=20, choices=ESTADOS, default='sin_iniciar')
