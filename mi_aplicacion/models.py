@@ -30,8 +30,33 @@ class Proyecto(models.Model):
     fecha_inicio = models.DateField(null=True, blank=True)
     fecha_fin = models.DateField(null=True, blank=True)
 
+    # 🔹 Nuevos campos
+    avance = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        help_text="Porcentaje de avance total del proyecto"
+    )
+    intervencion_total = models.PositiveIntegerField(
+        default=0,
+        help_text="Número total de intervenciones en el proyecto"
+    )
+    intervencion_rmbc = models.PositiveIntegerField(
+        default=0,
+        help_text="Número de intervenciones realizadas por RMBC"
+    )
+    ejecucion_proyecto = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        help_text="Porcentaje de ejecución del proyecto"
+    )
+    ejecucion_financiera = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Monto de ejecución financiera en millones"
+    )
+
     def __str__(self):
         return self.nombre
+
+    class Meta:
+        ordering = ["nombre"]
 
 class Frente(models.Model):
     nombre = models.CharField(max_length=150, unique=True)
@@ -45,6 +70,9 @@ class Frente(models.Model):
         return self.nombre
 
 
+def get_default_frente():
+    # Devuelve el Frente con id=1, o crea uno si no existe
+    return Frente.objects.first().id if Frente.objects.exists() else None
 class Reunion(models.Model):
     ESTADOS = [
         ('sin_iniciar', 'Sin iniciar'),
@@ -64,7 +92,8 @@ class Reunion(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='reuniones'
+        related_name='reuniones',
+        default=get_default_frente
     )
 
     titulo = models.CharField(max_length=200)

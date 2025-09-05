@@ -9,12 +9,16 @@ class GrupoTrabajoAdmin(admin.ModelAdmin):
 
 @admin.register(Reunion)
 class ReunionAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'estado', 'fecha', 'fecha_finalizacion', 'grupo_trabajo')
+    list_display = ('titulo', 'proyecto', 'estado', 'fecha', 'fecha_finalizacion', 'grupo_trabajo')
 
 admin.site.register(Intervencion)
 admin.site.register(Comentario)
 admin.site.register(Etiqueta)
 admin.site.register(Documento)
 admin.site.register(IntervencionDocumento)
-admin.site.register(Proyecto)
+@admin.register(Proyecto)
+class ProyectoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'avance', 'intervencion_total', 'intervencion_rmbc', 'ejecucion_proyecto', 'ejecucion_financiera')
+    search_fields = ('nombre',)
+    
 admin.site.register(Frente)

@@ -13,7 +13,8 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views import View
-from django.views.generic import DetailView, ListView, TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import DetailView, ListView, TemplateView, CreateView, UpdateView, DeleteView
 
 # terceros
 import openpyxl
@@ -217,44 +218,6 @@ class ListaReunionesView(ListView):
         context["frente_actual"] = self.request.GET.get("frente", "")
 
         return context
-
-# class GraficoReunionesView(TemplateView):
-#     template_name = "mi_aplicacion/grafico_reuniones.html"
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-
-#         # Capturar filtros
-#         estado = self.request.GET.get("estado")
-#         proyecto = self.request.GET.get("proyecto")
-#         frente = self.request.GET.get("frente")
-
-#         # Query base
-#         reuniones = Reunion.objects.all()
-
-#         # Aplicar filtros
-#         if estado:
-#             reuniones = reuniones.filter(estado=estado)
-#         if proyecto:
-#             reuniones = reuniones.filter(proyecto_id=proyecto)
-#         if frente:
-#             reuniones = reuniones.filter(frente_id=frente)
-
-#         # Agrupación por estado para los gráficos
-#         datos = reuniones.values("estado").annotate(cantidad=Count("id")).order_by("estado")
-#         estados = [d["estado"] for d in datos]
-#         cantidades = [d["cantidad"] for d in datos]
-
-#         # Enviar a la plantilla
-#         context["estados"] = estados
-#         context["cantidades"] = cantidades
-#         context["proyectos"] = Proyecto.objects.all()
-#         context["frentes"] = Frente.objects.all()
-#         context["estado_seleccionado"] = estado
-#         context["proyecto_seleccionado"] = proyecto
-#         context["frente_seleccionado"] = frente
-
-#         return context
     
 class ExportarReunionesExcelView(View):
     def get(self, request, *args, **kwargs):
@@ -618,3 +581,40 @@ class GraficoReunionesView(TemplateView):
         context["frente_seleccionado"] = frente or ""
 
         return context
+
+
+class ProyectoListView(LoginRequiredMixin, ListView):
+    model = Proyecto
+    template_name = "mi_aplicacion/proyecto_list.html"
+    context_object_name = "proyectos"
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Proyecto.objects.all().order_by("nombre")
+        return qs
+    
+# Ver detalle de un proyecto
+class ProyectoDetailView(DetailView):
+    model = Proyecto
+    template_name = 'mi_aplicacion/proyecto_detail.html'
+    context_object_name = 'proyecto'
+
+# Crear proyecto
+class ProyectoCreateView(CreateView):
+    model = Proyecto
+    template_name = 'mi_aplicacion/proyecto_form.html'
+    fields = ['nombre', 'descripcion', 'fecha_inicio', 'fecha_fin']
+    success_url = reverse_lazy('proyecto_list')
+
+# Editar proyecto
+class ProyectoUpdateView(UpdateView):
+    model = Proyecto
+    template_name = 'mi_aplicacion/proyecto_form.html'
+    fields = ['nombre', 'descripcion', 'fecha_inicio', 'fecha_fin']
+    success_url = reverse_lazy('proyecto_list')
+
+# Eliminar proyecto
+class ProyectoDeleteView(DeleteView):
+    model = Proyecto
+    template_name = 'mi_aplicacion/proyecto_confirm_delete.html'
+    success_url = reverse_lazy('proyecto_list')

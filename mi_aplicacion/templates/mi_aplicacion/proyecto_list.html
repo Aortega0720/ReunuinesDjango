@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Listado de Proyectos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">📋 Lista de Proyectos</h1>
+    <a href="{% url 'mi_aplicacion:proyecto_create' %}" class="btn btn-primary">
+      ➕ Nuevo Proyecto
+    </a>
+  </div>
+
+  {% if proyectos %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for proyecto in proyectos %}
+        <div class="col">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title">
+                <a href="{% url 'mi_aplicacion:proyecto_detail' proyecto.pk %}" class="text-decoration-none">
+                  {{ proyecto.nombre }}
+                </a>
+              </h5>
+              <p class="card-text text-muted mb-2">
+                {{ proyecto.fecha_inicio|default:"?" }} → {{ proyecto.fecha_fin|default:"?" }}
+              </p>
+
+              <!-- Indicadores -->
+              <ul class="list-group list-group-flush small">
+                <li class="list-group-item">
+                  <strong>Avance:</strong> {{ proyecto.avance }} %
+                </li>
+                <li class="list-group-item">
+                  <strong>Intervenciones Totales:</strong> {{ proyecto.intervencion_total }}
+                </li>
+                <li class="list-group-item">
+                  <strong>Intervenciones RMBC:</strong> {{ proyecto.intervencion_rmbc }}
+                </li>
+                <li class="list-group-item">
+                  <strong>Ejecución Proyecto:</strong> {{ proyecto.ejecucion_proyecto }} %
+                </li>
+                <li class="list-group-item">
+                  <strong>Ejecución Financiera:</strong> $ {{ proyecto.ejecucion_financiera }} M
+                </li>
+              </ul>
+            </div>
+            <div class="card-footer text-end">
+              <a href="{% url 'mi_aplicacion:proyecto_detail' proyecto.pk %}" class="btn btn-sm btn-outline-secondary">
+                Ver detalle
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">No hay proyectos registrados.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Listado de Actividades{% endblock %}
+{% block content %}
+<h1>{{ proyecto.nombre }}</h1>
+<p>{{ proyecto.descripcion }}</p>
+<p>Inicio: {{ proyecto.fecha_inicio }}</p>
+<p>Fin: {{ proyecto.fecha_fin }}</p>
+
+<a href="{% url 'mi_aplicacion:proyecto_update' proyecto.pk %}">✏️ Editar</a> |
+<a href="{% url 'mi_aplicacion:proyecto_delete' proyecto.pk %}">🗑️ Eliminar</a> |
+<a href="{% url 'mi_aplicacion:proyecto_list' %}">⬅ Volver</a>
+
+{% endblock %}
+
