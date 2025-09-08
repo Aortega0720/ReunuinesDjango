@@ -1,14 +1,83 @@
 {% extends 'base.html' %}
-{% block title %}Listado de Actividades{% endblock %}
+{% block title %}Detalles del Proyecto{% endblock %}
+
 {% block content %}
-<h1>{{ proyecto.nombre }}</h1>
-<p>{{ proyecto.descripcion }}</p>
-<p>Inicio: {{ proyecto.fecha_inicio }}</p>
-<p>Fin: {{ proyecto.fecha_fin }}</p>
+<div class="container my-5">
 
-<a href="{% url 'mi_aplicacion:proyecto_update' proyecto.pk %}">✏️ Editar</a> |
-<a href="{% url 'mi_aplicacion:proyecto_delete' proyecto.pk %}">🗑️ Eliminar</a> |
-<a href="{% url 'mi_aplicacion:proyecto_list' %}">⬅ Volver</a>
+  <div class="card border-0 shadow-lg rounded-3">
+    <div class="card-body p-4">
 
+      <!-- Título -->
+      <h1 class="h3 fw-bold text-primary mb-4">🏗️ {{ proyecto.nombre }}</h1>
+
+      <!-- Tabla con todos los campos -->
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <tbody>
+            <tr>
+              <th class="bg-light">📝 Descripción</th>
+              <td>{{ proyecto.descripcion|default:"(Sin descripción)" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">📅 Fecha Inicio</th>
+              <td>{{ proyecto.fecha_inicio|date:"d/m/Y"|default:"?" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">📅 Fecha Fin</th>
+              <td>{{ proyecto.fecha_fin|date:"d/m/Y"|default:"?" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">📊 Avance</th>
+              <td>
+                <div class="progress" style="height: 10px;">
+                  <div class="progress-bar bg-info" role="progressbar"
+                       style="width: {{ proyecto.avance_calculado }}%;"
+                       aria-valuenow="{{ proyecto.avance_calculado }}" aria-valuemin="0" aria-valuemax="100">
+                  </div>
+                </div>
+                <small class="text-muted">{{ proyecto.avance_calculado }} %</small>
+              </td>
+            </tr>
+            <tr>
+              <th class="bg-light">📈 Ejecución Proyecto</th>
+              <td>
+                <div class="progress" style="height: 10px;">
+                  <div class="progress-bar bg-success" role="progressbar"
+                       style="width: {{ proyecto.ejecucion_proyecto }}%;"
+                       aria-valuenow="{{ proyecto.ejecucion_proyecto }}" aria-valuemin="0" aria-valuemax="100">
+                  </div>
+                </div>
+                <small class="text-muted">{{ proyecto.ejecucion_proyecto }} %</small>
+              </td>
+            </tr>
+            <tr>
+              <th class="bg-light">💰 Ejecución Financiera</th>
+              <td>$ {{ proyecto.ejecucion_financiera }} M</td>
+            </tr>
+            <tr>
+              <th class="bg-light">📍 Intervención Total</th>
+              <td>{{ proyecto.intervencion_total }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">🏛️ Intervención RMBC</th>
+              <td>{{ proyecto.intervencion_rmbc }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Botones -->
+      <div class="d-flex gap-2 mt-4">
+        <a href="{% url 'mi_aplicacion:proyecto_update' proyecto.pk %}" 
+           class="btn btn-outline-primary shadow-sm px-3">✏️ Editar</a>
+        <a href="{% url 'mi_aplicacion:proyecto_delete' proyecto.pk %}" 
+           class="btn btn-outline-danger shadow-sm px-3">🗑️ Eliminar</a>
+        <a href="{% url 'mi_aplicacion:proyecto_list' %}" 
+           class="btn btn-secondary shadow-sm px-3">⬅ Volver</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
 {% endblock %}
-

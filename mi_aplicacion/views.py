@@ -7,7 +7,7 @@ from operator import attrgetter
 # Django
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.staticfiles import finders
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -583,15 +583,34 @@ class GraficoReunionesView(TemplateView):
         return context
 
 
+# class ProyectoListView(LoginRequiredMixin, ListView):
+#     model = Proyecto
+#     template_name = "mi_aplicacion/proyecto_list.html"
+#     context_object_name = "proyectos"
+#     # paginate_by = 10
+
+#     def get_queryset(self):
+#         qs = Proyecto.objects.all().order_by("nombre")
+#         return qs
+
 class ProyectoListView(LoginRequiredMixin, ListView):
     model = Proyecto
     template_name = "mi_aplicacion/proyecto_list.html"
     context_object_name = "proyectos"
-    # paginate_by = 10
 
     def get_queryset(self):
         qs = Proyecto.objects.all().order_by("nombre")
+        query = self.request.GET.get("q")
+        if query:
+            qs = qs.filter(
+                Q(nombre__icontains=query) | Q(descripcion__icontains=query)
+            )
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["q"] = self.request.GET.get("q", "") 
+        return context 
     
 # Ver detalle de un proyecto
 class ProyectoDetailView(DetailView):
@@ -618,3 +637,4 @@ class ProyectoDeleteView(DeleteView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_confirm_delete.html'
     success_url = reverse_lazy('proyecto_list')
+
