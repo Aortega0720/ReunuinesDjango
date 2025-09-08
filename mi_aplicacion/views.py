@@ -15,6 +15,7 @@ from django.utils.dateparse import parse_date
 from django.views import View
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, CreateView, UpdateView, DeleteView
+from django import forms
 
 # terceros
 import openpyxl
@@ -625,6 +626,12 @@ class ProyectoCreateView(CreateView):
     template_name = 'mi_aplicacion/proyecto_form.html'
     fields = '__all__'
     success_url = reverse_lazy('mi_aplicacion:proyecto_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['fecha_inicio'].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        form.fields['fecha_fin'].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        return form
 
 # Editar proyecto
 class ProyectoUpdateView(UpdateView):
