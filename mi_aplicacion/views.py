@@ -583,16 +583,6 @@ class GraficoReunionesView(TemplateView):
         return context
 
 
-# class ProyectoListView(LoginRequiredMixin, ListView):
-#     model = Proyecto
-#     template_name = "mi_aplicacion/proyecto_list.html"
-#     context_object_name = "proyectos"
-#     # paginate_by = 10
-
-#     def get_queryset(self):
-#         qs = Proyecto.objects.all().order_by("nombre")
-#         return qs
-
 class ProyectoListView(LoginRequiredMixin, ListView):
     model = Proyecto
     template_name = "mi_aplicacion/proyecto_list.html"
@@ -613,11 +603,22 @@ class ProyectoListView(LoginRequiredMixin, ListView):
         return context 
     
 # Ver detalle de un proyecto
+# class ProyectoDetailView(DetailView):
+#     model = Proyecto
+#     template_name = 'mi_aplicacion/proyecto_detail.html'
+#     context_object_name = 'proyecto'
+
 class ProyectoDetailView(DetailView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_detail.html'
     context_object_name = 'proyecto'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Ordenar las reuniones asociadas por fecha de inicio
+        context["reuniones"] = self.object.reuniones.all().order_by("fecha")
+        return context
+    
 # Crear proyecto
 class ProyectoCreateView(CreateView):
     model = Proyecto

@@ -1,17 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}Detalles del Proyecto{% endblock %}
-
 {% block content %}
 <div class="container my-5">
-
   <div class="card border-0 shadow-lg rounded-3">
     <div class="card-body p-4">
-
       <!-- Título -->
       <h1 class="h3 fw-bold text-primary mb-4">🏗️ {{ proyecto.nombre }}</h1>
 
       <!-- Tabla con todos los campos -->
-      <div class="table-responsive">
+      <div class="table-responsive mb-5">
         <table class="table table-bordered table-hover align-middle">
           <tbody>
             <tr>
@@ -29,11 +26,15 @@
             <tr>
               <th class="bg-light">📊 Avance</th>
               <td>
-                <div class="progress" style="height: 10px;">
-                  <div class="progress-bar bg-info" role="progressbar"
-                       style="width: {{ proyecto.avance_calculado }}%;"
-                       aria-valuenow="{{ proyecto.avance_calculado }}" aria-valuemin="0" aria-valuemax="100">
-                  </div>
+                <div class="progress" style="height: 10px">
+                  <div
+                    class="progress-bar bg-info"
+                    role="progressbar"
+                    style="width: {{ proyecto.avance_calculado }}%;"
+                    aria-valuenow="{{ proyecto.avance_calculado }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
                 </div>
                 <small class="text-muted">{{ proyecto.avance_calculado }} %</small>
               </td>
@@ -41,11 +42,15 @@
             <tr>
               <th class="bg-light">📈 Ejecución Proyecto</th>
               <td>
-                <div class="progress" style="height: 10px;">
-                  <div class="progress-bar bg-success" role="progressbar"
-                       style="width: {{ proyecto.ejecucion_proyecto }}%;"
-                       aria-valuenow="{{ proyecto.ejecucion_proyecto }}" aria-valuemin="0" aria-valuemax="100">
-                  </div>
+                <div class="progress" style="height: 10px">
+                  <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
+                    style="width: {{ proyecto.ejecucion_proyecto }}%;"
+                    aria-valuenow="{{ proyecto.ejecucion_proyecto }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
                 </div>
                 <small class="text-muted">{{ proyecto.ejecucion_proyecto }} %</small>
               </td>
@@ -66,18 +71,42 @@
         </table>
       </div>
 
+      <!-- Reuniones agrupadas por frente -->
+      <h2 class="h5 fw-bold text-secondary mt-4">📌 Reuniones Asociadas</h2>
+      {% regroup reuniones by frente as reuniones_por_frente %}
+
+      {% if reuniones_por_frente %}
+        {% for grupo in reuniones_por_frente %}
+          <div class="card mb-3 shadow-sm">
+            <div class="card-header bg-light fw-bold">
+              🔹 Frente: {{ grupo.grouper|default:"(Sin frente)" }}
+            </div>
+            <ul class="list-group list-group-flush">
+              {% for reunion in grupo.list %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{{ reunion.titulo }}</strong><br>
+                    <small class="text-muted">📅 {{ reunion.fecha|date:"d/m/Y" }}</small>
+                  </div>
+                  <a href="{% url 'mi_aplicacion:reunion_detail' reunion.pk %}" class="btn btn-sm btn-outline-primary">
+                    Ver
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="alert alert-info">🚧 No hay reuniones asociadas a este proyecto.</div>
+      {% endif %}
+
       <!-- Botones -->
       <div class="d-flex gap-2 mt-4">
-        <a href="{% url 'mi_aplicacion:proyecto_update' proyecto.pk %}" 
-           class="btn btn-outline-primary shadow-sm px-3">✏️ Editar</a>
-        <a href="{% url 'mi_aplicacion:proyecto_delete' proyecto.pk %}" 
-           class="btn btn-outline-danger shadow-sm px-3">🗑️ Eliminar</a>
-        <a href="{% url 'mi_aplicacion:proyecto_list' %}" 
-           class="btn btn-secondary shadow-sm px-3">⬅ Volver</a>
+        <a href="{% url 'mi_aplicacion:proyecto_update' proyecto.pk %}" class="btn btn-outline-primary shadow-sm px-3">✏️ Editar</a>
+        <a href="{% url 'mi_aplicacion:proyecto_delete' proyecto.pk %}" class="btn btn-outline-danger shadow-sm px-3">🗑️ Eliminar</a>
+        <a href="{% url 'mi_aplicacion:proyecto_list' %}" class="btn btn-secondary shadow-sm px-3">⬅ Volver</a>
       </div>
-
     </div>
   </div>
-
 </div>
 {% endblock %}
