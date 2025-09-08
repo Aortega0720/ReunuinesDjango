@@ -587,7 +587,7 @@ class ProyectoListView(LoginRequiredMixin, ListView):
     model = Proyecto
     template_name = "mi_aplicacion/proyecto_list.html"
     context_object_name = "proyectos"
-    paginate_by = 10
+    # paginate_by = 10
 
     def get_queryset(self):
         qs = Proyecto.objects.all().order_by("nombre")
