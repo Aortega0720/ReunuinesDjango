@@ -71,15 +71,15 @@
         </table>
       </div>
 
-      <!-- Reuniones agrupadas por frente -->
-      <h2 class="h5 fw-bold text-secondary mt-4">📌 Reuniones Asociadas</h2>
+      <!-- Actividades agrupadas por frente -->
+      <h2 class="h5 fw-bold text-secondary mt-4">📌 Actividades Asociadas</h2>
       {% regroup reuniones by frente as reuniones_por_frente %}
 
       {% if reuniones_por_frente %}
         {% for grupo in reuniones_por_frente %}
           <div class="card mb-3 shadow-sm">
             <div class="card-header bg-light fw-bold">
-              🔹 Frente: {{ grupo.grouper|default:"(Sin frente)" }}
+              🔹{{ grupo.grouper|default:"Actividades" }}
             </div>
             <ul class="list-group list-group-flush">
               {% for reunion in grupo.list %}
@@ -103,7 +103,7 @@
       <!-- Botones -->
       <div class="d-flex gap-2 mt-4">
         <a href="{% url 'mi_aplicacion:proyecto_update' proyecto.pk %}" class="btn btn-outline-primary shadow-sm px-3">✏️ Editar</a>
-        <a href="{% url 'mi_aplicacion:proyecto_delete' proyecto.pk %}" class="btn btn-outline-danger shadow-sm px-3">🗑️ Eliminar</a>
+        <!-- <a href="{% url 'mi_aplicacion:proyecto_delete' proyecto.pk %}" class="btn btn-outline-danger shadow-sm px-3">🗑️ Eliminar</a> -->
         <a href="{% url 'mi_aplicacion:proyecto_list' %}" class="btn btn-secondary shadow-sm px-3">⬅ Volver</a>
       </div>
     </div>

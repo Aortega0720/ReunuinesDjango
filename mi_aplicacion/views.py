@@ -623,15 +623,22 @@ class ProyectoDetailView(DetailView):
 class ProyectoCreateView(CreateView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_form.html'
-    fields = ['nombre', 'descripcion', 'fecha_inicio', 'fecha_fin']
-    success_url = reverse_lazy('proyecto_list')
+    fields = '__all__'
+    success_url = reverse_lazy('mi_aplicacion:proyecto_list')
 
 # Editar proyecto
 class ProyectoUpdateView(UpdateView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_form.html'
-    fields = ['nombre', 'descripcion', 'fecha_inicio', 'fecha_fin']
-    success_url = reverse_lazy('proyecto_list')
+    fields = '__all__'
+    success_url = reverse_lazy('mi_aplicacion:proyecto_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Hacemos que estos campos sean solo lectura
+        for campo in ['nombre', 'descripcion', 'fecha_inicio', 'fecha_fin']:
+            form.fields[campo].disabled = True
+        return form
 
 # Eliminar proyecto
 class ProyectoDeleteView(DeleteView):
