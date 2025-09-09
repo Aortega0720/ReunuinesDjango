@@ -20,14 +20,14 @@ from django import forms
 # terceros
 import openpyxl
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm, inch
 from reportlab.pdfgen import canvas
 from reportlab.platypus import (Image, ListFlowable, ListItem, PageBreak,
                                 Paragraph, SimpleDocTemplate, Spacer, Table,
-                                TableStyle)
+                                TableStyle,HRFlowable)
 
 # local (app)
 from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm
@@ -407,6 +407,7 @@ class ActasPorProyectoView(ListView):
 class HomeView(TemplateView):
     template_name = 'mi_aplicacion/home.html'
 
+
 class ExportarProyectoPDF(View):
     def get(self, request, pk, *args, **kwargs):
         try:
@@ -428,24 +429,23 @@ class ExportarProyectoPDF(View):
         styles = getSampleStyleSheet()
         elementos = []
 
-        # Estilos personalizados
+        # ===== Estilos =====
         estilo_titulo = ParagraphStyle(
             name="Titulo",
-            fontSize=14,
-            leading=16,
+            fontSize=16,
+            leading=18,
             spaceAfter=12,
-            alignment=TA_JUSTIFY
+            alignment=TA_CENTER,
+            fontName="Helvetica-Bold"
         )
-
         estilo_subtitulo = ParagraphStyle(
             name="Subtitulo",
             fontSize=12,
             leading=14,
             spaceAfter=6,
-            alignment=TA_JUSTIFY,
+            alignment=TA_LEFT,
             fontName="Helvetica-Bold"
         )
-
         estilo_texto = ParagraphStyle(
             name="Texto",
             fontSize=10,
@@ -453,7 +453,6 @@ class ExportarProyectoPDF(View):
             spaceAfter=4,
             alignment=TA_JUSTIFY
         )
-
         estilo_intervencion = ParagraphStyle(
             name="Intervencion",
             fontSize=10,
@@ -461,18 +460,49 @@ class ExportarProyectoPDF(View):
             spaceAfter=6,
             alignment=TA_JUSTIFY
         )
-
         estilo_comentario = ParagraphStyle(
             name="Comentario",
-            fontSize=10,
+            fontSize=9,
             leading=12,
             leftIndent=1*cm,
             spaceAfter=4,
             alignment=TA_JUSTIFY,
             fontName="Helvetica-Oblique"
         )
+        estilo_actividad = ParagraphStyle(
+            name="Actividad",
+            fontSize=13,
+            leading=16,
+            spaceBefore=12,
+            spaceAfter=8,
+            alignment=TA_LEFT,
+            textColor=colors.HexColor("#1F4E79"),  # Azul oscuro
+            fontName="Helvetica-Bold"
+        )
 
-        # Header y Footer
+        estilo_tarea = ParagraphStyle(
+            name="Tarea",
+            fontSize=11,
+            leading=14,
+            leftIndent=1 * cm,   # Indentado respecto a actividad
+            spaceBefore=6,
+            spaceAfter=4,
+            textColor=colors.HexColor("#2E75B6"),  # Azul más claro
+            fontName="Helvetica-Bold"
+        )
+
+        estilo_comentario = ParagraphStyle(
+            name="Comentario",
+            fontSize=9,
+            leading=12,
+            leftIndent=2 * cm,   # Más indentado respecto a intervención
+            spaceAfter=4,
+            textColor=colors.HexColor("#228B22"),  # Verde
+            fontName="Helvetica-Oblique"
+        )
+        
+
+        # ===== Header / Footer =====
         def header_footer(canvas, doc):
             banner_path = finders.find('img/banner.png')
             if banner_path:
@@ -481,40 +511,136 @@ class ExportarProyectoPDF(View):
             if footer_path:
                 canvas.drawImage(footer_path, x=0, y=0, width=A4[0], height=2 * cm)
 
-        # Título del proyecto
-        elementos.append(Paragraph(f"<b>Proyecto:</b> {proyecto.nombre}", estilo_titulo))
+        # ===== Datos del proyecto =====
+        elementos.append(Paragraph(f"Proyecto: {proyecto.nombre}", estilo_titulo))
         elementos.append(Spacer(1, 12))
 
-        # Iterar reuniones
-        for reunion in proyecto.reuniones.all():
-            elementos.append(Paragraph(f"Reunión: {reunion.titulo} ({reunion.fecha.strftime('%d/%m/%Y')})", estilo_subtitulo))
-            elementos.append(Paragraph(f"<b>Fecha:</b> {reunion.fecha.strftime('%d/%m/%Y')}", styles["Normal"]))
-            elementos.append(Paragraph(f"<b>Proyecto:</b> {reunion.proyecto.nombre if reunion.proyecto else ''}", styles["Normal"]))
-            elementos.append(Paragraph(f"<b>Frente:</b> {reunion.frente.nombre if reunion.frente else ''}", styles["Normal"]))
-            elementos.append(Paragraph(f"<b>Estado:</b> {reunion.estado}", styles["Normal"]))
-            elementos.append(Paragraph(f"<b>Descripción:</b> {reunion.descripcion or ''}", styles["Normal"]))
-            elementos.append(Spacer(1, 12))
+        elementos.append(Paragraph("<b>Datos generales del proyecto</b>", estilo_subtitulo))
+        elementos.append(Paragraph(f"<b>Nombre:</b> {proyecto.nombre}", estilo_texto))
+        elementos.append(Paragraph(f"<b>Descripción:</b> {proyecto.descripcion or '---'}", estilo_texto))
+        elementos.append(Paragraph(f"<b>Fecha de inicio:</b> {proyecto.fecha_inicio.strftime('%d/%m/%Y') if proyecto.fecha_inicio else '---'}", estilo_texto))
+        elementos.append(Paragraph(f"<b>Fecha de fin:</b> {proyecto.fecha_fin.strftime('%d/%m/%Y') if proyecto.fecha_fin else '---'}", estilo_texto))
+        elementos.append(Paragraph(f"<b>Avance calculado:</b> {proyecto.avance_calculado} %", estilo_texto))
+        elementos.append(Paragraph(f"<b>Total de intervenciones:</b> {proyecto.intervencion_total}", estilo_texto))
+        elementos.append(Paragraph(f"<b>Intervenciones RMBC:</b> {proyecto.intervencion_rmbc}", estilo_texto))
+        elementos.append(Paragraph(f"<b>Ejecución del proyecto:</b> {proyecto.ejecucion_proyecto} %", estilo_texto))
+        elementos.append(Paragraph(f"<b>Ejecución financiera:</b> {proyecto.ejecucion_financiera} millones", estilo_texto))
+        elementos.append(Spacer(1, 12))
 
-             # Intervenciones y comentarios
-            elementos.append(Paragraph("<b>Intervenciones y Comentarios</b>", styles["Heading2"]))
+       # ===== Reuniones agrupadas por frente Actividad =====
+        reuniones = proyecto.reuniones.select_related("frente", "parent").all()
+        actividades = [r for r in reuniones if r.frente and r.frente.tipo == "actividad"]
+
+        if actividades:
+            elementos.append(Paragraph("<b>Reuniones por Actividad</b>", estilo_subtitulo))
+            elementos.append(HRFlowable(width="100%", thickness=1, color=colors.grey))
             elementos.append(Spacer(1, 6))
 
-            for intervencion in reunion.intervenciones.all():
-            # Intervención con autor en rojo
-                contenido_intervencion = f'<font color="red">{intervencion.autor.get_full_name()}</font>: {intervencion.contenido}'
-                elementos.append(Paragraph(contenido_intervencion, estilo_intervencion))
-
-                # Comentarios de la intervención con autor en rojo
-                for comentario in intervencion.comentarios.all():
-                    contenido_comentario = f'<font color="green">{comentario.autor.get_full_name()}</font>: {comentario.contenido}'
-                    elementos.append(Paragraph(contenido_comentario, estilo_comentario))
-
+            for actividad in actividades:
+                fecha_str = actividad.fecha.strftime('%d/%m/%Y') if actividad.fecha else "Sin fecha"
+                elementos.append(Paragraph(f"Actividad: {actividad.titulo} ({fecha_str})", estilo_actividad))
+                elementos.append(Paragraph(f"<b>Frente:</b> {actividad.frente.nombre}", estilo_texto))
+                elementos.append(Paragraph(f"<b>Estado:</b> {actividad.estado}", estilo_texto))
+                elementos.append(Paragraph(f"<b>Descripción:</b> {actividad.descripcion or ''}", estilo_texto))
                 elementos.append(Spacer(1, 6))
 
-        # Construir el PDF
+                # Intervenciones de la actividad
+                if actividad.intervenciones.exists():
+                    elementos.append(Paragraph("<b>Intervenciones</b>", estilo_texto))
+                    for intervencion in actividad.intervenciones.all():
+                        contenido_intervencion = f'<font color="red">{intervencion.autor.get_full_name()}</font>: {intervencion.contenido}'
+                        elementos.append(Paragraph(contenido_intervencion, estilo_intervencion))
+
+                        for comentario in intervencion.comentarios.all():
+                            contenido_comentario = f'{comentario.autor.get_full_name()}: {comentario.contenido}'
+                            elementos.append(Paragraph(contenido_comentario, estilo_comentario))
+
+                # 🔹 Reuniones hijas (tareas) asociadas
+                tareas = [r for r in reuniones if r.frente and r.frente.tipo == "tarea" and r.parent_id == actividad.id]
+
+                if tareas:
+                    elementos.append(Spacer(1, 4))
+                    elementos.append(Paragraph("<b>Tareas asociadas</b>", estilo_tarea))
+
+                    for tarea in tareas:
+                        fecha_tarea = tarea.fecha.strftime('%d/%m/%Y') if tarea.fecha else "Sin fecha"
+
+                        # 🔹 Tabla principal de la tarea
+                        titulo_tarea = Paragraph(f"— {tarea.titulo} ({fecha_tarea})", estilo_tarea)
+                        contenido_tarea = [
+                            [titulo_tarea],
+                            [Paragraph(f"<b>Estado:</b> {tarea.estado}", estilo_texto)],
+                            [Paragraph(f"<b>Descripción:</b> {tarea.descripcion or ''}", estilo_texto)]
+                        ]
+
+                        tabla_tarea = Table(contenido_tarea, colWidths=[16*cm])
+                        tabla_tarea.setStyle(TableStyle([
+                            ("BOX", (0,0), (-1,-1), 0.8, colors.grey),
+                            ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#E9F2FB")),  # Encabezado azul claro
+                            ("LEFTPADDING", (0,0), (-1,-1), 6),
+                            ("RIGHTPADDING", (0,0), (-1,-1), 6),
+                            ("TOPPADDING", (0,0), (-1,-1), 4),
+                            ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+                        ]))
+
+                        elementos.append(tabla_tarea)
+                        elementos.append(Spacer(1, 6))
+
+                        # 🔹 Intervenciones dentro de la tarea como tablas
+                        if tarea.intervenciones.exists():
+                            elementos.append(Paragraph("<b>Intervenciones</b>", estilo_texto))
+
+                            for intervencion in tarea.intervenciones.all():
+                                contenido_intervencion = [
+                                    [Paragraph(f'<font color="red">{intervencion.autor.get_full_name()}</font>', estilo_intervencion)],
+                                    [Paragraph(intervencion.contenido, estilo_texto)]
+                                ]
+
+                                tabla_intervencion = Table(contenido_intervencion, colWidths=[15*cm])
+                                tabla_intervencion.setStyle(TableStyle([
+                                    ("BOX", (0,0), (-1,-1), 0.5, colors.lightgrey),
+                                    ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#FFF2CC")),  # Fondo amarillo claro en autor
+                                    ("LEFTPADDING", (0,0), (-1,-1), 5),
+                                    ("RIGHTPADDING", (0,0), (-1,-1), 5),
+                                    ("TOPPADDING", (0,0), (-1,-1), 3),
+                                    ("BOTTOMPADDING", (0,0), (-1,-1), 3),
+                                ]))
+
+                                elementos.append(tabla_intervencion)
+                                elementos.append(Spacer(1, 4))
+
+                                # 🔹 Comentarios como tablas anidadas
+                                for comentario in intervencion.comentarios.all():
+                                    contenido_comentario = [
+                                        [Paragraph(f'<font color="green">{comentario.autor.get_full_name()}</font>', estilo_comentario)],
+                                        [Paragraph(comentario.contenido, estilo_texto)]
+                                    ]
+
+                                    tabla_comentario = Table(contenido_comentario, colWidths=[14*cm])
+                                    tabla_comentario.setStyle(TableStyle([
+                                        ("BOX", (0,0), (-1,-1), 0.5, colors.lightgrey),
+                                        ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#EBF7E3")),  # Verde muy suave
+                                        ("LEFTPADDING", (0,0), (-1,-1), 5),
+                                        ("RIGHTPADDING", (0,0), (-1,-1), 5),
+                                        ("TOPPADDING", (0,0), (-1,-1), 3),
+                                        ("BOTTOMPADDING", (0,0), (-1,-1), 3),
+                                    ]))
+
+                                    elementos.append(tabla_comentario)
+                                    elementos.append(Spacer(1, 3))
+
+                        # Separador después de cada tarea
+                        elementos.append(Spacer(1, 8))
+                        elementos.append(HRFlowable(width="90%", thickness=0.7, color=colors.grey))
+                        elementos.append(Spacer(1, 8))
+        else:
+            elementos.append(Paragraph("Este proyecto no tiene reuniones de tipo Actividad.", estilo_texto))
+
+        # ===== Construcción =====
         doc.build(elementos, onFirstPage=header_footer, onLaterPages=header_footer)
 
         return response
+
     
 class GraficoReunionesView(TemplateView):
     template_name = "mi_aplicacion/grafico_reuniones.html"
@@ -603,12 +729,6 @@ class ProyectoListView(LoginRequiredMixin, ListView):
         context["q"] = self.request.GET.get("q", "") 
         return context 
     
-# Ver detalle de un proyecto
-# class ProyectoDetailView(DetailView):
-#     model = Proyecto
-#     template_name = 'mi_aplicacion/proyecto_detail.html'
-#     context_object_name = 'proyecto'
-
 class ProyectoDetailView(DetailView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_detail.html'
