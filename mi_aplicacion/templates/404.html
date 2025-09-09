@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}404 — Página no encontrada{% endblock %}
+
+{% block content %}
+<div class="container text-center my-5">
+  <img src="{% static 'img/logo (2).svg' %}" alt="404" style="max-width:220px" class="mb-3">
+  <h1 class="h3">404 — Página no encontrada</h1>
+  <p class="text-muted">No pudimos encontrar <strong>{{ path }}</strong>.</p>
+  <img src="{% static 'img/image (3).png' %}" alt="404" style="max-width:220px" class="mb-3">
+
+  <!-- {% if exception %}
+    <p class="small text-muted">Detalle: {{ exception }}</p>
+  {% endif %} -->
+
+  <div class="mt-4">
+    <a href="{% url 'mi_aplicacion:home' %}" class="btn btn-primary me-2">Volver al inicio</a>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary">Volver</a>
+  </div>
+</div>
+{% endblock %}
