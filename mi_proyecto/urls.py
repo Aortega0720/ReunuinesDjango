@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('mi_aplicacion.urls', namespace='mi_aplicacion')),
     path('accounts/', include('django.contrib.auth.urls')),  # ← Esta línea es clave
-    path('oidc/', include('mozilla_django_oidc.urls')),
+    # path('oidc/', include('mozilla_django_oidc.urls')),
 ]
 
 if settings.DEBUG:
