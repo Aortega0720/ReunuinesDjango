@@ -36,7 +36,7 @@ from reportlab.platypus import (Image, ListFlowable, ListItem, PageBreak,
                                 TableStyle,HRFlowable)
 
 # local (app)
-from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm, UploadCSVForm
+from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm
 from .models import Comentario, Frente, Intervencion, Proyecto, Reunion
 
 
