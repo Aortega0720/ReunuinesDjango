@@ -7,7 +7,7 @@ from .views import (
     GraficoReunionesView, ExportarReunionesExcelView,
     SitioConstruccionView, ActaReunionPDFView,
     DocumentosView, ActasPorProyectoView,HomeView,ExportarProyectoPDF, ProyectoListView,
-    ProyectoDetailView, ProyectoCreateView, ProyectoUpdateView, ProyectoDeleteView
+    ProyectoDetailView, ProyectoCreateView, ProyectoUpdateView, ProyectoDeleteView,
 )
 # from mozilla_django_oidc import views as oidc_views
 
@@ -25,11 +25,11 @@ urlpatterns = [
     path('actas/', ActasPorProyectoView.as_view(), name='actas_por_proyecto'),
     path('', HomeView.as_view(), name='home'),
     path('proyecto/<int:pk>/exportar_pdf/', ExportarProyectoPDF.as_view(), name='exportar_proyecto_pdf'),
-    path(
-        "accounts/login/",
-        auth_views.LoginView.as_view(template_name="mi_aplicacion/login.html"),
-        name="login",
-    ),
+    # path(
+    #     "accounts/login/",
+    #     auth_views.LoginView.as_view(template_name="mi_aplicacion/login.html"),
+    #     name="login",
+    # ),
     # path('oidc/authenticate/', oidc_views.OIDCAuthenticationRequestView.as_view(), name='oidc_authentication_init'),
     # path('oidc/callback/', oidc_views.OIDCAuthenticationCallbackView.as_view(), name='oidc_authentication_callback'),
     # path('oidc/logout/', oidc_views.OIDCLogoutView.as_view(), name='oidc_logout'),
@@ -39,5 +39,7 @@ urlpatterns = [
     path('proyectos/nuevo/', ProyectoCreateView.as_view(), name='proyecto_create'),
     path('proyectos/<int:pk>/editar/', ProyectoUpdateView.as_view(), name='proyecto_update'),
     path('proyectos/<int:pk>/eliminar/', ProyectoDeleteView.as_view(), name='proyecto_delete'),
+
+
 ]
 

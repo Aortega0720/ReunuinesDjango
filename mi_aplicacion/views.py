@@ -1,11 +1,14 @@
 ﻿# stdlib
 import os
+import csv
+import openpyxl
+
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import attrgetter
 
 # Django
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles import finders
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponse, JsonResponse
@@ -16,9 +19,12 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, CreateView, UpdateView, DeleteView
 from django import forms
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.views.generic.edit import FormView
 
 # terceros
-import openpyxl
+
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from reportlab.lib.pagesizes import A4
@@ -30,7 +36,7 @@ from reportlab.platypus import (Image, ListFlowable, ListItem, PageBreak,
                                 TableStyle,HRFlowable)
 
 # local (app)
-from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm
+from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm, UploadCSVForm
 from .models import Comentario, Frente, Intervencion, Proyecto, Reunion
 
 
@@ -107,7 +113,7 @@ class ReunionListView(ListView):
 
         return context
 
-class ReunionDetailView(DetailView):
+class ReunionDetailView(LoginRequiredMixin, DetailView):
     model = Reunion
     template_name = 'mi_aplicacion/reunion_detail.html'
     context_object_name = 'reunion'
@@ -710,7 +716,7 @@ class GraficoReunionesView(TemplateView):
         return context
 
 # LoginRequiredMixin
-class ProyectoListView(ListView):
+class ProyectoListView(LoginRequiredMixin,ListView):
     model = Proyecto
     template_name = "mi_aplicacion/proyecto_list.html"
     context_object_name = "proyectos"
@@ -772,4 +778,3 @@ class ProyectoDeleteView(DeleteView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_confirm_delete.html'
     success_url = reverse_lazy('proyecto_list')
-
