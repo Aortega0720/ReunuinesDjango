@@ -113,7 +113,7 @@ class ReunionListView(ListView):
 
         return context
 
-class ReunionDetailView(LoginRequiredMixin, DetailView):
+class ReunionDetailView(DetailView):
     model = Reunion
     template_name = 'mi_aplicacion/reunion_detail.html'
     context_object_name = 'reunion'
@@ -716,7 +716,7 @@ class GraficoReunionesView(TemplateView):
         return context
 
 # LoginRequiredMixin
-class ProyectoListView(LoginRequiredMixin,ListView):
+class ProyectoListView(ListView):
     model = Proyecto
     template_name = "mi_aplicacion/proyecto_list.html"
     context_object_name = "proyectos"
