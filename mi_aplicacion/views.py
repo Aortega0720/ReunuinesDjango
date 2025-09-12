@@ -113,7 +113,7 @@ class ReunionListView(ListView):
 
         return context
 
-class ReunionDetailView(DetailView):
+class ReunionDetailView(LoginRequiredMixin,DetailView):
     model = Reunion
     template_name = 'mi_aplicacion/reunion_detail.html'
     context_object_name = 'reunion'
@@ -735,7 +735,7 @@ class ProyectoListView(ListView):
         context["q"] = self.request.GET.get("q", "") 
         return context 
     
-class ProyectoDetailView(DetailView):
+class ProyectoDetailView(LoginRequiredMixin,DetailView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_detail.html'
     context_object_name = 'proyecto'
@@ -747,7 +747,7 @@ class ProyectoDetailView(DetailView):
         return context
     
 # Crear proyecto
-class ProyectoCreateView(CreateView):
+class ProyectoCreateView(LoginRequiredMixin,CreateView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_form.html'
     fields = '__all__'
@@ -760,7 +760,7 @@ class ProyectoCreateView(CreateView):
         return form
 
 # Editar proyecto
-class ProyectoUpdateView(UpdateView):
+class ProyectoUpdateView(LoginRequiredMixin,UpdateView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_form.html'
     fields = '__all__'
@@ -774,7 +774,7 @@ class ProyectoUpdateView(UpdateView):
         return form
 
 # Eliminar proyecto
-class ProyectoDeleteView(DeleteView):
+class ProyectoDeleteView(LoginRequiredMixin,DeleteView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_confirm_delete.html'
     success_url = reverse_lazy('proyecto_list')
