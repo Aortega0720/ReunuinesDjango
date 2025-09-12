@@ -1,0 +1,134 @@
+/* Espaciado uniforme */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+/* Inputs más cómodos */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+/* Textarea más alto */
+textarea {
+  min-height: 120px;
+}
+
+/* ====== Tarjeta principal ====== */
+.custom-card {
+  border-radius: 15px;
+  border: none;
+}
+
+/* ====== Encabezado ====== */
+.custom-header {
+  background-color: #173D62;
+  color: #ffffff;
+  font-weight: bold;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  padding: 15px 20px;
+}
+
+/* ====== Labels ====== */
+.form-label {
+  color: #173D62;
+  font-weight: 600;
+}
+
+/* ====== Campos ====== */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #173D62;
+  box-shadow: 0 0 0 0.2rem rgba(23, 61, 98, 0.25);
+  outline: none;
+}
+
+/* ====== Botón guardar ====== */
+.custom-btn {
+  background-color: #173D62;
+  border-color: #173D62;
+  transition: background-color 0.3s ease;
+}
+
+.custom-btn:hover {
+  background-color: #12508c;
+  border-color: #12508c;
+}
+
+/* ====== Responsividad ====== */
+
+/* Tablets (≤ 992px) */
+@media (max-width: 992px) {
+  .custom-card {
+    margin: 10px;
+  }
+  .custom-header h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Móviles (≤ 768px) */
+@media (max-width: 768px) {
+  .custom-card {
+    margin: 5px;
+    border-radius: 10px;
+  }
+
+  .custom-header {
+    padding: 10px 15px;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .form-label {
+    font-size: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
+  .d-flex.justify-content-end {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .d-flex.justify-content-end a,
+  .d-flex.justify-content-end button {
+    width: 100%;
+  }
+}
+
+/* Extra pequeños (≤ 480px) */
+@media (max-width: 480px) {
+  .custom-header h3 {
+    font-size: 1rem;
+  }
+
+  .form-label {
+    font-size: 0.85rem;
+  }
+
+  .custom-btn {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+}

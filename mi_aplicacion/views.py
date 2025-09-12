@@ -38,7 +38,7 @@ from reportlab.platypus import (Image, ListFlowable, ListItem, PageBreak,
                                 TableStyle,HRFlowable)
 
 # local (app)
-from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm
+from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm, ReunionForm
 from .models import Comentario, Frente, Intervencion, Proyecto, Reunion
 
 
@@ -797,3 +797,9 @@ class OIDCLogoutView(View):
         )
 
         return redirect(keycloak_logout_url)
+    
+class ReunionCreateView(LoginRequiredMixin,CreateView):
+    model = Reunion
+    form_class = ReunionForm
+    template_name = "mi_aplicacion/reunion_form.html"
+    success_url = reverse_lazy("mi_aplicacion:reunion_list")  # Ajusta al nombre de tu lista

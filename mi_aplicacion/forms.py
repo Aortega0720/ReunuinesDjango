@@ -70,3 +70,16 @@ class ReunionForm(forms.ModelForm):
         else:
             self.fields['frente'].queryset = Frente.objects.none()
             self.fields['frente'].disabled = True
+
+class UploadCSVForm(forms.Form):
+    csv_file = forms.FileField(label="Seleccionar archivo CSV")
+
+class ReunionForm(forms.ModelForm):
+    class Meta:
+        model = Reunion
+        fields = "__all__"
+        widgets = {
+            "fecha": forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+            "fecha_finalizacion": forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+            "descripcion": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
+        }
