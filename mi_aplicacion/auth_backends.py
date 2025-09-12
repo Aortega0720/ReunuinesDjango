@@ -18,3 +18,12 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
         user.email = claims.get("email", user.email)
         user.save()
         return user
+
+    def get_userinfo(self, access_token, id_token, payload):
+        """Guardar el id_token en la sesión para poder cerrar sesión globalmente."""
+        userinfo = super().get_userinfo(access_token, id_token, payload)
+
+        if self.request:  # aseguramos que haya request
+            self.request.session["oidc_id_token"] = id_token
+
+        return userinfo

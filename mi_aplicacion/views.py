@@ -22,6 +22,8 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.views.generic.edit import FormView
+from django.contrib.auth import logout
+from django.conf import settings
 
 # terceros
 
@@ -778,3 +780,20 @@ class ProyectoDeleteView(LoginRequiredMixin,DeleteView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_confirm_delete.html'
     success_url = reverse_lazy('proyecto_list')
+
+class OIDCLogoutView(View):
+    def get(self, request, *args, **kwargs):
+        # Obtiene el id_token de la sesión (mozilla-django-oidc lo guarda ahí)
+        id_token = request.session.get("oidc_id_token")
+
+        # Cierra la sesión de Django
+        logout(request)
+
+        # Construye la URL de logout de Keycloak con id_token_hint
+        keycloak_logout_url = (
+            f"{settings.OIDC_LOGOUT_URL}"
+            f"?id_token_hint={id_token}"
+            f"&post_logout_redirect_uri={settings.OIDC_REDIRECT_URI_AFTER_LOGOUT}"
+        )
+
+        return redirect(keycloak_logout_url)
