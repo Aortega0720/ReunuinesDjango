@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date
 
+User.add_to_class("__str__", lambda self: f"{self.first_name} {self.last_name}".strip() or self.username)
 
 class GrupoTrabajo(models.Model):
     nombre = models.CharField(max_length=100)
