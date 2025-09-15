@@ -126,7 +126,11 @@
                       <div class="mb-2">
                         <i class="bi bi-people"></i> 
                         {% for user in reunion.responsables.all %}
-                          <span class="badge bg-info text-dark me-1">{{ user.username }}</span>
+                          {% if user.first_name %}
+                           <span class="badge bg-info text-dark me-1">{{ user.first_name }} {{ user.last_name }}</span>
+                          {% else %}
+                           <span class="badge bg-info text-dark me-1">{{ user.username }}</span>
+                          {% endif %}
                         {% endfor %}
                       </div>
                     {% endif %}
