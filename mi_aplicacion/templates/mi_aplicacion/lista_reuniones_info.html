@@ -39,6 +39,23 @@
             </select>
         </div>
 
+        <div class="col-auto">
+            <select id="responsable-select" name="responsable" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los responsables</option>
+                {% for user in responsables_disponibles %}
+                    {% if user.first_name %}
+                        <option value="{{ user.id }}" {% if user.id|stringformat:"s" == responsable_actual %}selected{% endif %}>
+                            {{ user.first_name }} {{ user.last_name }}
+                        </option>
+                    {% else %}
+                        <option value="{{ user.id }}" {% if user.id|stringformat:"s" == responsable_actual %}selected{% endif %}>
+                            {{ user.username }} 
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
         <!-- Filtro frente -->
         <!-- <div class="col-auto">
             <select id="frente-select" name="frente" class="form-select" onchange="this.form.submit()">
@@ -58,8 +75,8 @@
 
         <!-- Exportar a Excel -->
         <div class="col-auto">
-            <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}&proyecto={{ proyecto_actual }}&frente={{ frente_actual }}"
-               class="btn btn-success">
+            <a href="{% url 'mi_aplicacion:exportar_excel' %}?estado={{ estado_actual }}&proyecto={{ proyecto_actual }}&frente={{ frente_actual }}&responsable={{ responsable_actual }}"
+            class="btn btn-success">
                 <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
             </a>
         </div>
@@ -75,7 +92,8 @@
                 <th>Título</th>
                 <th>Proyecto</th>
                 <!-- <th>Frente</th> -->
-                <th>Grupo</th>
+                <!-- <th>Grupo</th> -->
+                 <th>Responsables</th>
                 <th>Fecha</th>
                 <th>Estado</th>
                 <!-- <th>Etiquetas</th> -->
@@ -110,7 +128,22 @@
                   {% if reunion.frente %}{{ reunion.frente.nombre }}{% else %}-{% endif %}
                 </td> -->
 
-                <td data-label="Grupo">{{ reunion.grupo_trabajo.nombre }}</td>
+                <!-- <td data-label="Grupo">{{ reunion.grupo_trabajo.nombre }}</td> -->
+                <td data-label="Responsables">
+                    {% if reunion.responsables.all %}
+                        {% for user in reunion.responsables.all %}
+                         {% if user.first_name %}
+                            <span class="badge bg-info text-dark me-1">
+                            {{ user.first_name }} {{ user.last_name }}
+                            </span>
+                         {% else %}
+                           <span class="badge bg-info text-dark me-1">{{ user.username }}</span>
+                          {% endif %}
+                        {% endfor %}
+                    {% else %}
+                    <span class="text-muted">Sin responsables</span>
+                    {% endif %}
+                </td>
 
                 <td data-label="Fecha">{{ reunion.fecha|date:"d/m/Y" }}</td>
 

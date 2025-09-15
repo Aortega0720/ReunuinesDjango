@@ -22,7 +22,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.views.generic.edit import FormView
-from django.contrib.auth import logout
+from django.contrib.auth import logout, get_user_model
 from django.conf import settings
 
 # terceros
@@ -130,8 +130,6 @@ class ReunionListView(ListView):
         context['grouped_reuniones'] = grouped
 
         return context
-
-
 class ReunionDetailView(LoginRequiredMixin,DetailView):
     model = Reunion
     template_name = 'mi_aplicacion/reunion_detail.html'
@@ -195,20 +193,20 @@ class ReunionDetailView(LoginRequiredMixin,DetailView):
         context = self.get_context_data()
         context['form_intervencion'] = form_intervencion
         context['form_documento'] = form_documento
-        return self.render_to_response(context)
-  
+        return self.render_to_response(context) 
 class ListaReunionesView(ListView):
     model = Reunion
     template_name = "mi_aplicacion/lista_reuniones_info.html"
     context_object_name = "reuniones"
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related("proyecto", "frente", "grupo_trabajo")
+        queryset = super().get_queryset().select_related("proyecto", "frente", "grupo_trabajo").prefetch_related("responsables")
 
         # Capturar filtros del request
         estado = self.request.GET.get("estado")
         proyecto = self.request.GET.get("proyecto")
         frente = self.request.GET.get("frente")
+        responsable = self.request.GET.get("responsable")
 
         if estado:
             queryset = queryset.filter(estado=estado)
@@ -216,6 +214,8 @@ class ListaReunionesView(ListView):
             queryset = queryset.filter(proyecto_id=proyecto)
         if frente:
             queryset = queryset.filter(frente_id=frente)
+        if responsable:
+            queryset = queryset.filter(responsables__id=responsable)
 
         # Calcular días restantes o vencido
         hoy = date.today()
@@ -237,11 +237,14 @@ class ListaReunionesView(ListView):
         context["estados_disponibles"] = [e[0] for e in Reunion.ESTADOS]  # ejemplo: ["pendiente", "en_progreso", "cerrada"]
         context["proyectos_disponibles"] = Proyecto.objects.all()
         context["frentes_disponibles"] = Frente.objects.all()
+        User = get_user_model()
+        context["responsables_disponibles"] = User.objects.all()
 
         # Mantener selección actual
         context["estado_actual"] = self.request.GET.get("estado", "")
         context["proyecto_actual"] = self.request.GET.get("proyecto", "")
         context["frente_actual"] = self.request.GET.get("frente", "")
+        context["responsable_actual"] = self.request.GET.get("responsable", "")
 
         return context
     
