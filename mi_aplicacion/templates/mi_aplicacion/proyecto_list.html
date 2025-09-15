@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Listado de Proyectos{% endblock %}
 
+{% load humanize %}
+
 {% block content %}
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -63,16 +65,25 @@
 
               <!-- Ejecución Financiera -->
               <div class="mb-2">
-                <strong>Ejecución Financiera:</strong> 
+                <strong>Ejecución Financiera:</strong>
                 <span class="badge bg-warning text-dark">
-                  $ {{ proyecto.ejecucion_financiera|default:"0" }} M
+                  $ {{ proyecto.ejecucion_financiera|default:"0"|intcomma  }} M /
+                  $ {{ proyecto.intervencion_total|default:"0"|intcomma  }} M
                 </span>
+              </div>
+
+              <div class="progress mt-2" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                    style="width: {{ porcentaje_ejecucion }}%;"
+                    aria-valuenow="{{ porcentaje_ejecucion }}" aria-valuemin="0" aria-valuemax="100">
+                  {{ porcentaje_ejecucion }}%
+                </div>
               </div>
 
               <!-- Totales -->
               <div class="d-flex justify-content-between mt-auto pt-3">
-                <span class="badge bg-primary">Totales: {{ proyecto.intervencion_total }}</span>
-                <span class="badge bg-secondary">RMBC: {{ proyecto.intervencion_rmbc }}</span>
+                <span class="badge bg-primary">Totales: $ {{ proyecto.intervencion_total|default:"0"|intcomma  }}</span>
+                <span class="badge bg-secondary">RMBC: $ {{ proyecto.intervencion_rmbc|default:"0"|intcomma  }}</span>
               </div>
             </div>
             <div class="card-footer bg-light text-end border-0">
