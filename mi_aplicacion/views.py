@@ -54,7 +54,7 @@ class ReunionListView(ListView):
             .select_related('grupo_trabajo', 'proyecto', 'frente')
             .prefetch_related('etiquetas', 'responsables')
         ).order_by(
-            'frente__nombre', 
+            'frente__nombre',
             '-fecha'
         )
 
@@ -74,6 +74,14 @@ class ReunionListView(ListView):
             except (ValueError, TypeError):
                 pass
 
+        # 🔹 Filtro por responsable
+        responsable_pk = self.request.GET.get('responsable')
+        if responsable_pk:
+            try:
+                qs = qs.filter(responsables__id=int(responsable_pk))
+            except (ValueError, TypeError):
+                pass
+
         return qs
 
     def get_context_data(self, **kwargs):
@@ -84,6 +92,14 @@ class ReunionListView(ListView):
         context['proyecto_actual'] = self.request.GET.get('proyecto', '')
         context['frente_actual'] = self.request.GET.get('frente', '')
 
+        # 🔹 Responsables para el filtro
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        context['responsables'] = User.objects.filter(
+            reuniones_responsables__isnull=False
+        ).distinct().order_by('first_name', 'last_name')
+        context['responsable_actual'] = self.request.GET.get('responsable', '')
+
         # Agrupar reuniones de la página actual por frente
         page_qs = context.get('page_obj').object_list if context.get('page_obj') else list(context.get('reuniones', []))
 
@@ -93,7 +109,7 @@ class ReunionListView(ListView):
         for reunion in page_qs:
             if reunion.fecha_finalizacion:
                 diff = (reunion.fecha_finalizacion.date() - today).days
-                reunion.dias_restantes = abs(diff)  
+                reunion.dias_restantes = abs(diff)
                 reunion.estado_vencida = diff < 0
             else:
                 reunion.dias_restantes = None
@@ -114,6 +130,7 @@ class ReunionListView(ListView):
         context['grouped_reuniones'] = grouped
 
         return context
+
 
 class ReunionDetailView(LoginRequiredMixin,DetailView):
     model = Reunion
@@ -737,7 +754,7 @@ class ProyectoListView(ListView):
         context["q"] = self.request.GET.get("q", "") 
         return context 
     
-class ProyectoDetailView(LoginRequiredMixin,DetailView):
+class ProyectoDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_detail.html'
     context_object_name = 'proyecto'

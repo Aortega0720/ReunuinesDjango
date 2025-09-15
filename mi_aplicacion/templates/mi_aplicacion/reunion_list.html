@@ -20,7 +20,7 @@
 <!-- <h1 class="mb-4">Listado de Actividades</h1> -->
 
 <!-- FILTRO POR PROYECTO -->
-<form method="get" class="mb-4 d-flex align-items-center g-2">
+<!-- <form method="get" class="mb-4 d-flex align-items-center g-2">
   <div class="me-2">
     <label for="proyectoSelect" class="form-label visually-hidden">Proyecto</label>
     <select id="proyectoSelect" name="proyecto" class="form-select" onchange="this.form.submit()">
@@ -34,6 +34,43 @@
   </div>
 
   {% if proyecto_actual %}
+    <div>
+      <a href="{% url 'mi_aplicacion:reunion_list' %}" class="btn btn-outline-secondary">Restablecer</a>
+    </div>
+  {% endif %}
+</form> -->
+<form method="get" class="mb-4 d-flex align-items-center g-2">
+  <!-- Filtro por proyecto -->
+  <div class="me-2">
+    <label for="proyectoSelect" class="form-label visually-hidden">Proyecto</label>
+    <select id="proyectoSelect" name="proyecto" class="form-select" onchange="this.form.submit()">
+      <option value="">— Todos los proyectos —</option>
+      {% for p in proyectos %}
+        <option value="{{ p.pk }}" {% if proyecto_actual|stringformat:"s" == p.pk|stringformat:"s" %}selected{% endif %}>
+          {{ p.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Filtro por responsable -->
+  <div class="me-2">
+    <label for="responsableSelect" class="form-label visually-hidden">Responsable</label>
+    <select id="responsableSelect" name="responsable" class="form-select" onchange="this.form.submit()">
+      <option value="">— Todos los responsables —</option>
+      {% for r in responsables %}
+        <option value="{{ r.pk }}" {% if responsable_actual|stringformat:"s" == r.pk|stringformat:"s" %}selected{% endif %}>
+          {% if r.first_name %}
+            {{ r.first_name }} {{ r.last_name }}
+          {% else %}
+            {{ r.username }}
+          {% endif %}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if proyecto_actual or responsable_actual %}
     <div>
       <a href="{% url 'mi_aplicacion:reunion_list' %}" class="btn btn-outline-secondary">Restablecer</a>
     </div>
