@@ -211,3 +211,28 @@ class Comentario(models.Model):
 
     def __str__(self):
         return f'Comentario de {self.autor} en {self.intervencion}'
+
+
+class GraphMailConfig(models.Model):
+    nombre = models.CharField(
+        max_length=100,
+        default="Configuración Principal",
+        help_text="Identificador de la configuración."
+    )
+    tenant_id = models.CharField(max_length=200)
+    client_id = models.CharField(max_length=200)
+    client_secret = models.CharField(max_length=500)
+    scope = models.CharField(max_length=300, default="https://graph.microsoft.com/.default")
+    grant_type = models.CharField(max_length=100, default="client_credentials")
+
+    email_send = models.EmailField(help_text="Correo desde el que se envía (ej: respuesta@regionmetropolitana.gov.co)")
+    email_receive = models.EmailField(help_text="Correo de destino (ej: ortegaarrieta@gmail.com)")
+
+    activo = models.BooleanField(default=True, help_text="Si está activo se usará esta configuración.")
+
+    def __str__(self):
+        return f"Config: {self.nombre} (send: {self.email_send})"
+
+    class Meta:
+        verbose_name = "Configuración Graph Mail"
+        verbose_name_plural = "Configuraciones Graph Mail"

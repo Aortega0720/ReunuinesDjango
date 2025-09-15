@@ -1,45 +1,65 @@
 ﻿# stdlib
-import os
 import csv
-import openpyxl
-
+import os
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import attrgetter
 
 # Django
+from django import forms
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles import finders
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views import View
-from django.urls import reverse_lazy
-from django.views.generic import DetailView, ListView, TemplateView, CreateView, UpdateView, DeleteView
-from django import forms
-from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 from django.views.generic.edit import FormView
-from django.contrib.auth import logout, get_user_model
-from django.conf import settings
 
-# terceros
-
+# third-party
+import openpyxl
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm, inch
 from reportlab.pdfgen import canvas
-from reportlab.platypus import (Image, ListFlowable, ListItem, PageBreak,
-                                Paragraph, SimpleDocTemplate, Spacer, Table,
-                                TableStyle,HRFlowable)
+from reportlab.platypus import (
+    HRFlowable,
+    Image,
+    ListFlowable,
+    ListItem,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
-# local (app)
-from .forms import ComentarioForm, IntervencionDocumentoForm, IntervencionForm, ReunionForm
+# local (web)
+from .forms import (
+    ComentarioForm,
+    IntervencionDocumentoForm,
+    IntervencionForm,
+    ReunionForm,
+)
 from .models import Comentario, Frente, Intervencion, Proyecto, Reunion
+from .utils.graph_mail import send_mail_graph, GraphError
+
 
 
 class ReunionListView(ListView):
@@ -822,4 +842,21 @@ class ReunionCreateView(LoginRequiredMixin,CreateView):
     model = Reunion
     form_class = ReunionForm
     template_name = "mi_aplicacion/reunion_form.html"
-    success_url = reverse_lazy("mi_aplicacion:reunion_list")  # Ajusta al nombre de tu lista
+    success_url = reverse_lazy("mi_aplicacion:reunion_list") 
+
+class EnviarCorreoView(View):
+    """
+    Vista para enviar un correo usando la configuración activa
+    de Graph Mail guardada en el admin.
+    """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            result = send_mail_graph(
+                subject="Correo desde Django",
+                body="Este correo se envió con Microsoft Graph y configuración en admin.",
+            )
+        except GraphError as e:
+            return JsonResponse({"status": "error", "detail": str(e)}, status=500)
+
+        return JsonResponse(result)
