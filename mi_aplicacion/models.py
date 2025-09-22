@@ -236,3 +236,15 @@ class GraphMailConfig(models.Model):
     class Meta:
         verbose_name = "Configuración Graph Mail"
         verbose_name_plural = "Configuraciones Graph Mail"
+
+class KeycloakProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="kc_profile")
+    keycloak_id = models.CharField("Keycloak ID (sub)", max_length=255, unique=True, db_index=True)
+    id_token = models.TextField(null=True, blank=True)
+    access_token = models.TextField(null=True, blank=True)
+    refresh_token = models.TextField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"KCProfile(user={self.user_id}, keycloak_id={self.keycloak_id})"

@@ -28,6 +28,7 @@ from django.views.generic import (
     UpdateView,
 )
 from django.views.generic.edit import FormView
+from django.core.exceptions import PermissionDenied
 
 # third-party
 import openpyxl
@@ -777,7 +778,7 @@ class ProyectoListView(ListView):
         context["q"] = self.request.GET.get("q", "") 
         return context 
     
-class ProyectoDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
+class ProyectoDetailView(LoginRequiredMixin,DetailView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_detail.html'
     context_object_name = 'proyecto'
@@ -789,11 +790,33 @@ class ProyectoDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
         return context
     
 # Crear proyecto
-class ProyectoCreateView(LoginRequiredMixin,CreateView):
+# class ProyectoCreateView(LoginRequiredMixin,UserPassesTestMixin,CreateView):
+#     model = Proyecto
+#     template_name = 'mi_aplicacion/proyecto_form.html'
+#     fields = '__all__'
+#     success_url = reverse_lazy('mi_aplicacion:proyecto_list')
+
+#     def get_form(self, form_class=None):
+#         form = super().get_form(form_class)
+#         form.fields['fecha_inicio'].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+#         form.fields['fecha_fin'].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+#         return form
+
+class ProyectoCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Proyecto
     template_name = 'mi_aplicacion/proyecto_form.html'
     fields = '__all__'
     success_url = reverse_lazy('mi_aplicacion:proyecto_list')
+
+    def test_func(self):
+        user = self.request.user
+        # Permitir a superuser / staff o a quien tenga el permiso de añadir proyectos
+        return user.is_superuser or user.is_staff or user.has_perm('mi_aplicacion.add_proyecto')
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        raise PermissionDenied
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
