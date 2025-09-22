@@ -8,14 +8,24 @@ body {
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
-    color: #333; 
+    color: #173D62; 
 }
 
 /* Párrafos y texto normal */
-p, li, span, div {
+p, li, span {
     font-family: 'Nunito', sans-serif;
     font-weight: 400;   
-    color: #555; 
+    color: #173D62; 
+}
+
+.text-gold {
+    font-family: 'Nunito', sans-serif;
+    color: #E0AE13 !important;
+}
+
+.bg-dark-blue {
+    background-color: #122941 !important;
+    color: #fff;
 }
 
 /* Sidebar */

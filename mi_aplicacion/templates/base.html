@@ -18,9 +18,9 @@
 <body class="d-flex flex-column min-vh-100">
 
   <!-- Navbar móvil -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark d-lg-none">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark-blue d-lg-none">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">
+      <a class="navbar-brand" href="/">
         <img src="{% static 'img/logo (2).svg' %}" alt="Logo Empresa" style="height:30px;">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMobile" aria-controls="navbarMobile" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,12 +32,12 @@
           <!-- Usuario logeado o "User" -->
           <li class="nav-item mb-2">
             {% if request.user.is_authenticated %}
-              <div class="d-flex align-items-center text-white">
+              <div class="d-flex align-items-center text-gold">
                 <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
                 {{ request.user.first_name }} {{ request.user.last_name }}
               </div>
             {% else %}
-              <div class="d-flex align-items-center text-white">
+              <div class="d-flex align-items-center">
                 <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
                 User
               </div>
@@ -63,13 +63,15 @@
   <!-- Sidebar escritorio -->
   <div class="sidebar d-none d-lg-flex flex-column">
     <div class="sidebar-header">
-      <img src="{% static 'img/logo (2).svg' %}" alt="Logo Empresa">
+      <a class="navbar-brand" href="/">
+        <img src="{% static 'img/logo (2).svg' %}" alt="Logo Empresa">
+      </a>
     </div>
 
     <!-- Usuario logeado o "User" -->
     <div class="p-3 text-white border-bottom">
       {% if request.user.is_authenticated %}
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center text-gold">
           <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
           {{ request.user.first_name }} {{ request.user.last_name }}
         </div>
@@ -107,7 +109,7 @@
   </main>
 
   <!-- Footer global (solo en móvil) -->
-  <footer class="footer bg-dark text-white text-center py-3 d-lg-none mt-auto">
+  <footer class="footer bg-dark-blue text-white text-center py-3 d-lg-none mt-auto">
     &copy; {{ year }} RMBC<br>
     <a href="{% url 'mi_aplicacion:sitio_construccion' %}" class="text-white text-decoration-underline"><i class="bi bi-file-text me-1"></i>Términos y Condiciones</a>
   </footer>
